@@ -2,93 +2,134 @@
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, initial-scale=1.0">
-    <title>高雄市垃圾車查詢系統</title>
-
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f4f7fb;
-            margin: 0;
-            text-align: center;
-        }
-
-        header {
-            background-color: #18794e;
-            color: white;
-            padding: 35px 20px;
-        }
-
-        main {
-            background: white;
-            margin: 40px auto;
-            padding: 30px;
-            max-width: 600px;
-            border-radius: 12px;
-            box-shadow: 0 4px 12px #0001;
-        }
-
-        select, button {
-            padding: 12px;
-            margin: 10px;
-            font-size: 16px;
-            border-radius: 6px;
-        }
-
-        button {
-            background-color: #18794e;
-            color: white;
-            border: none;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高雄市垃圾車查詢系統</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+<style>
+body {
+  margin: 0;
+  background: #f3f6f8;
+  font-family: Arial, sans-serif;
+  color: #222;
+}
+header {
+  background: #377b55;
+  color: white;
+  padding: 40px 15px;
+  text-align: center;
+}
+main {
+  max-width: 780px;
+  margin: 35px auto;
+  padding: 24px;
+  background: white;
+  border-radius: 12px;
+}
+input, button {
+  padding: 12px;
+  font-size: 16px;
+  border-radius: 6px;
+}
+input {
+  width: 65%;
+  border: 1px solid #aaa;
+}
+button {
+  background: #377b55;
+  border: none;
+  color: white;
+  cursor: pointer;
+}
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  margin-top: 12px;
+  padding: 15px;
+}
+.card p { margin: 8px 0; }
+small { color: #666; }
+</style>
 </head>
-
 <body>
-    <header>
-        <h1>高雄市垃圾車查詢系統</h1>
-        <p>快速查詢垃圾車路線與清運時間</p>
-    </header>
+<header>
+  <h1>高雄市垃圾車查詢系統</h1>
+  <p>查詢垃圾車停靠地點與清運時間</p>
+</header>
 
-    <main>
-        <h2>垃圾車路線查詢</h2>
+<main>
+  <h2>前鎮區垃圾車查詢</h2>
+  <p>請輸入街道名稱，例如：瑞隆路</p>
 
-        <p>請選擇行政區：</p>
+  <input id="keyword" placeholder="搜尋街道或地點">
+  <button onclick="searchTruck()">查詢</button>
 
-        <select id="district">
-            <option value="">請選擇行政區</option>
-            <option value="三民區">三民區</option>
-            <option value="左營區">左營區</option>
-            <option value="苓雅區">苓雅區</option>
-            <option value="前鎮區">前鎮區</option>
-        </select>
+  <p id="status">資料載入中...</p>
+  <div id="results"></div>
+  <small>資料來源：高雄市政府開放資料。
+  實際清運時間請以環保局公告為準。</small>
+</main>
 
-        <br>
+<script>
+let truckData = [];
 
-        <button onclick="searchTruck()">
-            查詢垃圾車
-        </button>
+Papa.parse("garbage-truck.csv", {
+  download: true,
+  header: true,
+  skipEmptyLines: true,
+  complete: function(result) {
+    truckData = result.data;
+    document.getElementById("status").textContent =
+      "已載入 " + truckData.length + " 筆資料";
+  },
+  error: function() {
+    document.getElementById("status").textContent =
+      "資料載入失敗，請重新整理網頁。";
+  }
+});
 
-        <p id="result"></p>
-    </main>
+function searchTruck() {
+  const keyword =
+    document.getElementById("keyword").value.trim();
+  const results = document.getElementById("results");
+  const status = document.getElementById("status");
 
-    <script>
-        function searchTruck() {
-            var district =
-                document.getElementById("district").value;
+  results.replaceChildren();
 
-            if (district === "") {
-                document.getElementById("result")
-                    .innerText = "請先選擇行政區！";
-            } else {
-                document.getElementById("result")
-                    .innerText =
-                    "已選擇：" + district +
-                    "，垃圾車資料尚未載入。";
-            }
-        }
-    </script>
+  if (!keyword) {
+    status.textContent = "請先輸入街道名稱！";
+    return;
+  }
+
+  const matches = truckData.filter(item =>
+    (item["停留地點"] || "").includes(keyword)
+  );
+
+  status.textContent =
+    "找到 " + matches.length + " 筆資料";
+
+  matches.forEach(item => {
+    const card = document.createElement("div");
+    card.className = "card";
+
+    const fields = [
+      ["地點", "停留地點"],
+      ["時間", "停留時間"],
+      ["回收日", "回收日"],
+      ["行政區", "行政區"],
+      ["村里", "村里"]
+    ];
+
+    fields.forEach(([label, key]) => {
+      const p = document.createElement("p");
+      p.textContent = label + "：" +
+        (item[key] || "未提供");
+      card.appendChild(p);
+    });
+
+    results.appendChild(card);
+  });
+}
+</script>
 </body>
 </html>
