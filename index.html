@@ -5,103 +5,205 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>高雄市垃圾車查詢系統</title>
+
 <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+
 <style>
+* { box-sizing: border-box; }
+
 body {
   margin: 0;
   background: #f3f6f8;
   font-family: Arial, sans-serif;
   color: #222;
 }
+
 header {
   background: #377b55;
   color: white;
   padding: 40px 15px;
   text-align: center;
 }
+
 main {
-  max-width: 780px;
+  max-width: 800px;
   margin: 35px auto;
   padding: 24px;
   background: white;
   border-radius: 12px;
 }
-input, button {
+
+select, input, button {
   padding: 12px;
   font-size: 16px;
   border-radius: 6px;
 }
-input {
-  width: 65%;
+
+select, input {
+  width: 100%;
   border: 1px solid #aaa;
+  margin: 8px 0 16px;
 }
+
 button {
   background: #377b55;
-  border: none;
   color: white;
+  border: none;
   cursor: pointer;
+  padding: 12px 25px;
 }
+
+button:hover {
+  background: #25623d;
+}
+
 .card {
   border: 1px solid #ddd;
   border-radius: 8px;
-  margin-top: 12px;
   padding: 15px;
+  margin-top: 12px;
 }
+
 .card p { margin: 8px 0; }
 small { color: #666; }
 </style>
 </head>
+
 <body>
 <header>
   <h1>高雄市垃圾車查詢系統</h1>
-  <p>查詢垃圾車停靠地點與清運時間</p>
+  <p>快速查詢垃圾車路線與清運時間</p>
 </header>
 
 <main>
-  <h2>前鎮區垃圾車查詢</h2>
-  <p>請輸入街道名稱，例如：瑞隆路</p>
+  <h2>垃圾車路線查詢</h2>
 
-  <input id="keyword" placeholder="搜尋街道或地點">
-  <button onclick="searchTruck()">查詢</button>
+  <label for="district">選擇行政區：</label>
+  <select id="district">
+    <option value="前鎮區">前鎮區</option>
+    <option value="三民區">三民區</option>
+  </select>
 
-  <p id="status">資料載入中...</p>
+  <label for="keyword">街道或停靠地點：</label>
+  <input id="keyword" placeholder="例如：瑞隆路、建工路">
+
+  <button id="searchButton"
+          onclick="searchTruck()" disabled>
+    資料載入中...
+  </button>
+
+  <p id="status">正在讀取政府資料...</p>
+
   <div id="results"></div>
-  <small>資料來源：高雄市政府開放資料。
-  實際清運時間請以環保局公告為準。</small>
+
+  <p><small>
+    資料來源：高雄市政府環境保護局。
+    本網站顯示資料集中的停靠時間，
+    非即時車輛位置。實際清運資訊以官方公告為準。
+  </small></p>
 </main>
 
 <script>
 let truckData = [];
+let loaded = false;
 
-Papa.parse("garbage-truck.csv", {
-  download: true,
-  header: true,
-  skipEmptyLines: true,
-  complete: function(result) {
-    truckData = result.data;
-    document.getElementById("status").textContent =
-      "已載入 " + truckData.length + " 筆資料";
+const files = [
+  {
+    name: "garbage-truck.csv",
+    district: "前鎮區"
   },
-  error: function() {
-    document.getElementById("status").textContent =
-      "資料載入失敗，請重新整理網頁。";
+  {
+    name: "sanmin-east.csv",
+    district: "三民區"
+  },
+  {
+    name: "sanmin-west.csv",
+    district: "三民區"
   }
-});
+];
+
+function loadCSV(file) {
+  return new Promise((resolve, reject) => {
+    Papa.parse(file.name, {
+      download: true,
+      header: true,
+      skipEmptyLines: "greedy",
+
+      complete: function(result) {
+        const rows = result.data
+          .filter(row => row["停留地點"])
+          .map(row => ({
+            ...row,
+            searchDistrict: file.district,
+            sourceFile: file.name
+          }));
+
+        resolve(rows);
+      },
+
+      error: function(error) {
+        reject(error);
+      }
+    });
+  });
+}
+
+async function loadAllData() {
+  const status = document.getElementById("status");
+
+  const results = await Promise.allSettled(
+    files.map(file => loadCSV(file))
+  );
+
+  let failedFiles = [];
+
+  results.forEach((result, index) => {
+    if (result.status === "fulfilled") {
+      truckData.push(...result.value);
+    } else {
+      failedFiles.push(files[index].name);
+    }
+  });
+
+  loaded = true;
+
+  const button = document.getElementById("searchButton");
+  button.disabled = false;
+  button.textContent = "查詢垃圾車";
+
+  status.textContent =
+    "已載入 " + truckData.length + " 筆資料";
+
+  if (failedFiles.length > 0) {
+    status.textContent +=
+      "；載入失敗：" + failedFiles.join("、");
+  }
+}
 
 function searchTruck() {
+  const district =
+    document.getElementById("district").value;
+
   const keyword =
     document.getElementById("keyword").value.trim();
-  const results = document.getElementById("results");
+
   const status = document.getElementById("status");
+  const results = document.getElementById("results");
 
   results.replaceChildren();
 
+  if (!loaded) {
+    status.textContent = "資料尚未載入完成";
+    return;
+  }
+
   if (!keyword) {
-    status.textContent = "請先輸入街道名稱！";
+    status.textContent = "請先輸入街道或停靠地點";
     return;
   }
 
   const matches = truckData.filter(item =>
+    item.searchDistrict === district &&
     (item["停留地點"] || "").includes(keyword)
   );
 
@@ -113,23 +215,28 @@ function searchTruck() {
     card.className = "card";
 
     const fields = [
-      ["地點", "停留地點"],
-      ["時間", "停留時間"],
-      ["回收日", "回收日"],
-      ["行政區", "行政區"],
-      ["村里", "村里"]
+      ["停靠地點", item["停留地點"]],
+      ["停留時間", item["停留時間"]],
+      ["回收日", item["回收日"] ||
+                 item["回收日(星期)"]],
+      ["行政區", district],
+      ["村里", item["村里"]],
+      ["車次", item["車次"]]
     ];
 
-    fields.forEach(([label, key]) => {
+    fields.forEach(([label, value]) => {
       const p = document.createElement("p");
-      p.textContent = label + "：" +
-        (item[key] || "未提供");
+      p.textContent =
+        label + "：" + (value || "未提供");
+
       card.appendChild(p);
     });
 
     results.appendChild(card);
   });
 }
+
+loadAllData();
 </script>
 </body>
 </html>
