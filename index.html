@@ -92,6 +92,7 @@ small { color: #666; }
     <option value="大樹區">大樹區</option>
     <option value="大社區">大社區</option>
     <option value="茄萣區">茄萣區</option>
+    <option value="大寮區">大寮區</option>
   </select>
 
   <label for="keyword">街道或停靠地點：</label>
@@ -176,6 +177,7 @@ const files = [
   }
 ];
 
+
 function loadCSV(file) {
   return new Promise((resolve, reject) => {
     Papa.parse(file.name, {
@@ -186,11 +188,26 @@ function loadCSV(file) {
       complete: function(result) {
         const rows = result.data
           .filter(row => row["停留地點"])
-          .map(row => ({
-            ...row,
-            searchDistrict: file.district,
-            sourceFile: file.name
-          }));
+          .map(row => {
+
+            // 讀取 CSV 原本的行政區
+            const originalDistrict =
+              (row["行政區"] || "").trim();
+
+            // 預設使用檔案指定的行政區
+            let district = file.district;
+
+            // 把混入的 212 筆大寮區資料分開
+            if (originalDistrict === "大寮區") {
+              district = "大寮區";
+            }
+
+            return {
+              ...row,
+              searchDistrict: district,
+              sourceFile: file.name
+            };
+          });
 
         resolve(rows);
       },
