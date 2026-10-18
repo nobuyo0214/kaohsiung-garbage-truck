@@ -1,0 +1,94 @@
+
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+    <title>高雄市垃圾車查詢系統</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f7fb;
+            margin: 0;
+            text-align: center;
+        }
+
+        header {
+            background-color: #18794e;
+            color: white;
+            padding: 35px 20px;
+        }
+
+        main {
+            background: white;
+            margin: 40px auto;
+            padding: 30px;
+            max-width: 600px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px #0001;
+        }
+
+        select, button {
+            padding: 12px;
+            margin: 10px;
+            font-size: 16px;
+            border-radius: 6px;
+        }
+
+        button {
+            background-color: #18794e;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <h1>高雄市垃圾車查詢系統</h1>
+        <p>快速查詢垃圾車路線與清運時間</p>
+    </header>
+
+    <main>
+        <h2>垃圾車路線查詢</h2>
+
+        <p>請選擇行政區：</p>
+
+        <select id="district">
+            <option value="">請選擇行政區</option>
+            <option value="三民區">三民區</option>
+            <option value="左營區">左營區</option>
+            <option value="苓雅區">苓雅區</option>
+            <option value="前鎮區">前鎮區</option>
+        </select>
+
+        <br>
+
+        <button onclick="searchTruck()">
+            查詢垃圾車
+        </button>
+
+        <p id="result"></p>
+    </main>
+
+    <script>
+        function searchTruck() {
+            var district =
+                document.getElementById("district").value;
+
+            if (district === "") {
+                document.getElementById("result")
+                    .innerText = "請先選擇行政區！";
+            } else {
+                document.getElementById("result")
+                    .innerText =
+                    "已選擇：" + district +
+                    "，垃圾車資料尚未載入。";
+            }
+        }
+    </script>
+</body>
+</html>
