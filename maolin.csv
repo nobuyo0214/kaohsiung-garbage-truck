@@ -1,0 +1,4 @@
+﻿Seq,責任區,車次,回收日,停留時間,停留地點,行政區,村里,經度,緯度,一般垃圾日,路線編號,清運方式,官方來源
+1,E85120001,1,一、三、五,15:30,茂林里至多納里收集垃圾及回收物品。,茂林區,,,,一、三、五,E85120001,沿線清運(不落地),https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6091475022&ddsPageID=LINEINFO
+2,E85120001,1,一、三、五,16:10,多納里至萬山里收集垃圾及回收物品。,茂林區,,,,三、五,E85120001,沿線清運(不落地),https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6091475022&ddsPageID=LINEINFO
+3,E85120001,1,一、三、五,16:50,萬山里至茂林收集垃圾及回收物品。,茂林區,,,,一、三、五,E85120001,沿線清運(不落地),https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6091475022&ddsPageID=LINEINFO
