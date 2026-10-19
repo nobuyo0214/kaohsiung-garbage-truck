@@ -1,2 +1,3 @@
 ﻿來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源
 shanlin.csv,E84620001,1,山仙路6號,17:00,一、二、四、五、六,https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6971398337&ddsPageID=LINEINFO
+sanmin-east.csv,十,1,覺民路531巷口,16:30,一、二、四、五、六,https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?ddsPageID=LINEINFO&dbid=6091395620
