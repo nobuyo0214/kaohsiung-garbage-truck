@@ -1,321 +1,642 @@
-
 <!DOCTYPE html>
 <html lang="zh-Hant">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>高雄市垃圾車查詢系統</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="查詢高雄市38個行政區的垃圾車停靠地點、時間與資源回收日。">
+  <title>高雄市垃圾車查詢系統</title>
+  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-  margin: 0;
-  background: #f3f6f8;
-  font-family: Arial, sans-serif;
-  color: #222;
-}
-
-header {
-  background: #377b55;
-  color: white;
-  padding: 40px 15px;
-  text-align: center;
-}
-
-main {
-  max-width: 800px;
-  margin: 35px auto;
-  padding: 24px;
-  background: white;
-  border-radius: 12px;
-}
-
-select, input, button {
-  padding: 12px;
-  font-size: 16px;
-  border-radius: 6px;
-}
-
-select, input {
-  width: 100%;
-  border: 1px solid #aaa;
-  margin: 8px 0 16px;
-}
-
-button {
-  background: #377b55;
-  color: white;
-  border: none;
-  cursor: pointer;
-  padding: 12px 25px;
-}
-
-button:hover {
-  background: #25623d;
-}
-
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 15px;
-  margin-top: 12px;
-}
-
-.card p { margin: 8px 0; }
-small { color: #666; }
-</style>
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      background: #f3f6f8;
+      color: #263238;
+      font-family: Arial, "Microsoft JhengHei", sans-serif;
+      line-height: 1.6;
+    }
+    header {
+      background: linear-gradient(135deg, #216b49, #409866);
+      color: white;
+      text-align: center;
+      padding: 36px 16px;
+    }
+    header h1 { margin: 0 0 5px; font-size: 29px; }
+    header p { margin: 0; opacity: .95; }
+    main {
+      max-width: 950px;
+      margin: 26px auto;
+      padding: 24px;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 5px 22px rgba(0,0,0,.06);
+    }
+    h2 { margin-top: 0; }
+    .form-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 13px 18px;
+    }
+    .field { min-width: 0; }
+    .field.full { grid-column: 1 / -1; }
+    label {
+      display: block;
+      font-weight: bold;
+      margin-bottom: 5px;
+    }
+    input, select, button {
+      font: inherit;
+      font-size: 16px;
+      border-radius: 8px;
+    }
+    input, select {
+      width: 100%;
+      padding: 11px;
+      border: 1px solid #bbc8c0;
+      background: white;
+      color: #263238;
+    }
+    input:focus, select:focus {
+      outline: 2px solid #83c39f;
+      border-color: #267951;
+    }
+    .hint {
+      margin: 6px 0 0;
+      color: #647169;
+      font-size: 13px;
+    }
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-top: 20px;
+    }
+    button {
+      padding: 10px 19px;
+      border: none;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    button:disabled { opacity: .55; cursor: not-allowed; }
+    .primary { background: #267951; color: white; }
+    .primary:hover:not(:disabled) { background: #195e3d; }
+    .secondary { background: #e9f1ec; color: #225d41; }
+    .secondary:hover { background: #d5e8da; }
+    .notice {
+      margin-top: 18px;
+      padding: 12px 14px;
+      border-left: 4px solid #267951;
+      background: #f1f8f3;
+      color: #365343;
+      border-radius: 4px;
+      font-size: 14px;
+    }
+    .status {
+      margin-top: 16px;
+      padding: 12px 14px;
+      border-radius: 8px;
+      background: #f4f6f7;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+    .warning { color: #9b4b11; }
+    .results-heading {
+      margin: 25px 0 12px;
+      font-size: 20px;
+    }
+    .card {
+      border: 1px solid #e0e6e3;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 12px;
+      background: #fff;
+    }
+    .card h3 {
+      margin: 0 0 12px;
+      color: #216b49;
+      font-size: 18px;
+      overflow-wrap: anywhere;
+    }
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 7px 16px;
+      font-size: 14px;
+    }
+    .detail { margin: 0; overflow-wrap: anywhere; }
+    .detail strong { color: #53635a; }
+    .card .source { margin-top: 10px; font-size: 12px; color: #69746d; }
+    #moreButton { display: block; margin: 18px auto 0; }
+    #moreButton[hidden] { display: none; }
+    .footer-note { margin-top: 28px; color: #67736b; font-size: 13px; }
+    @media (max-width: 620px) {
+      main { margin: 12px; padding: 17px; }
+      header { padding: 25px 12px; }
+      header h1 { font-size: 23px; }
+      .form-grid, .detail-grid { grid-template-columns: 1fr; }
+      .field.full { grid-column: auto; }
+      .button-row button { flex: 1; }
+    }
+  </style>
 </head>
 
 <body>
-<header>
-  <h1>高雄市垃圾車查詢系統</h1>
-  <p>快速查詢垃圾車路線與清運時間</p>
-</header>
+  <header>
+    <h1>高雄市垃圾車查詢系統</h1>
+    <p>38 區停靠地點 · 時間 · 回收日查詢</p>
+  </header>
 
-<main>
-  <h2>垃圾車路線查詢</h2>
+  <main>
+    <h2>進階路線查詢</h2>
 
-  <label for="district">選擇行政區：</label>
-  <select id="district">
-    <option value="前鎮區">前鎮區</option>
-    <option value="三民區">三民區</option>
-    <option value="苓雅區">苓雅區</option>
-    <option value="鳳山區">鳳山區</option>
-    <option value="左營區">左營區</option>
-    <option value="楠梓區">楠梓區</option>
-    <option value="鼓山區">鼓山區</option>
-    <option value="仁武區">仁武區</option>
-    <option value="林園區">林園區</option>
-    <option value="大樹區">大樹區</option>
-    <option value="大社區">大社區</option>
-    <option value="茄萣區">茄萣區</option>
-    <option value="大寮區">大寮區</option>
-    <option value="前金區">前金區</option>
-    <option value="鹽埕區">鹽埕區</option>
-    <option value="旗津區">旗津區</option>
-    <option value="橋頭區">橋頭區</option>
-    <option value="燕巢區">燕巢區</option>
-    <option value="阿蓮區">阿蓮區</option>
-    <option value="彌陀區">彌陀區</option>
-    <option value="內門區">內門區</option>
-    <option value="美濃區">美濃區</option>
-    <option value="新興區">新興區</option>
-    <option value="岡山區">岡山區</option>
-    <option value="路竹區">路竹區</option>
-    <option value="湖內區">湖內區</option>
-    <option value="永安區">永安區</option>
-    <option value="梓官區">梓官區</option>
-    <option value="田寮區">田寮區</option>
-    <option value="旗山區">旗山區</option>
-    <option value="六龜區">六龜區</option>
-    <option value="甲仙區">甲仙區</option>
-    <option value="鳥松區">鳥松區</option>
-    <option value="小港區">小港區</option>
-    <option value="杉林區">杉林區</option>
-    <option value="桃源區">桃源區</option>
-    <option value="茂林區">茂林區</option>
-    <option value="那瑪夏區">那瑪夏區</option>
-  </select>
+    <form id="searchForm">
+      <div class="form-grid">
+        <div class="field">
+          <label for="district">行政區</label>
+          <select id="district">
+            <option value="前鎮區">前鎮區</option>
+            <option value="三民區">三民區</option>
+            <option value="苓雅區">苓雅區</option>
+            <option value="鳳山區">鳳山區</option>
+            <option value="左營區">左營區</option>
+            <option value="楠梓區">楠梓區</option>
+            <option value="鼓山區">鼓山區</option>
+            <option value="仁武區">仁武區</option>
+            <option value="林園區">林園區</option>
+            <option value="大樹區">大樹區</option>
+            <option value="大社區">大社區</option>
+            <option value="茄萣區">茄萣區</option>
+            <option value="大寮區">大寮區</option>
+            <option value="前金區">前金區</option>
+            <option value="鹽埕區">鹽埕區</option>
+            <option value="旗津區">旗津區</option>
+            <option value="橋頭區">橋頭區</option>
+            <option value="燕巢區">燕巢區</option>
+            <option value="阿蓮區">阿蓮區</option>
+            <option value="彌陀區">彌陀區</option>
+            <option value="內門區">內門區</option>
+            <option value="美濃區">美濃區</option>
+            <option value="新興區">新興區</option>
+            <option value="岡山區">岡山區</option>
+            <option value="路竹區">路竹區</option>
+            <option value="湖內區">湖內區</option>
+            <option value="永安區">永安區</option>
+            <option value="梓官區">梓官區</option>
+            <option value="田寮區">田寮區</option>
+            <option value="旗山區">旗山區</option>
+            <option value="六龜區">六龜區</option>
+            <option value="甲仙區">甲仙區</option>
+            <option value="鳥松區">鳥松區</option>
+            <option value="小港區">小港區</option>
+            <option value="杉林區">杉林區</option>
+            <option value="桃源區">桃源區</option>
+            <option value="茂林區">茂林區</option>
+            <option value="那瑪夏區">那瑪夏區</option>
+          </select>
+        </div>
 
-  <label for="keyword">街道或停靠地點：</label>
-  <input id="keyword" placeholder="例如：瑞隆路、建工路">
+        <div class="field">
+          <label for="village">村里</label>
+          <select id="village" disabled>
+            <option value="">全部村里</option>
+          </select>
+          <p class="hint">依所選行政區自動更新；未提供村里的紀錄仍可用地點搜尋。</p>
+        </div>
 
-  <button id="searchButton"
-          onclick="searchTruck()" disabled>
-    資料載入中...
-  </button>
+        <div class="field full">
+          <label for="keyword">街道、巷弄或停靠地點</label>
+          <input id="keyword" type="search" placeholder="例如：瑞隆路、建工路、杉林國中">
+          <p class="hint">可以留空，直接查看該區的資料。</p>
+        </div>
 
-  <p id="status">正在讀取政府資料...</p>
+        <div class="field">
+          <label for="dayType">星期篩選依據</label>
+          <select id="dayType">
+            <option value="recycle">資源回收日</option>
+            <option value="garbage">一般垃圾清運日（部分資料提供）</option>
+          </select>
+        </div>
 
-  <div id="results"></div>
+        <div class="field">
+          <label for="weekday">星期</label>
+          <select id="weekday">
+            <option value="">全部星期</option>
+            <option value="一">星期一</option>
+            <option value="二">星期二</option>
+            <option value="三">星期三</option>
+            <option value="四">星期四</option>
+            <option value="五">星期五</option>
+            <option value="六">星期六</option>
+            <option value="日">星期日</option>
+          </select>
+        </div>
 
-  <p><small>
-    資料來源：高雄市政府環境保護局。
-    本網站顯示資料集中的停靠時間，
-    非即時車輛位置。實際清運資訊以官方公告為準。
-  </small></p>
-</main>
+        <div class="field">
+          <label for="period">停留時間</label>
+          <select id="period">
+            <option value="">全部時間</option>
+            <option value="morning">早上（06:00～11:59）</option>
+            <option value="afternoon">下午（12:00～16:59）</option>
+            <option value="evening">傍晚（17:00～19:59）</option>
+            <option value="night">晚上（20:00～23:59）</option>
+            <option value="dawn">凌晨（00:00～05:59）</option>
+          </select>
+        </div>
 
-<script>
-let truckData = [];
-let loaded = false;
+        <div class="field">
+          <label for="sortOrder">搜尋結果排序</label>
+          <select id="sortOrder">
+            <option value="asc">時間由早到晚</option>
+            <option value="desc">時間由晚到早</option>
+          </select>
+        </div>
+      </div>
 
-const files = [
-  { name: "garbage-truck.csv", district: "前鎮區" },
-  { name: "sanmin-east.csv", district: "三民區" },
-  { name: "sanmin-west.csv", district: "三民區" },
-  { name: "lingya.csv", district: "苓雅區" },
-  { name: "fengshan-north.csv", district: "鳳山區" },
-  { name: "fengshan-south.csv", district: "鳳山區" },
-  { name: "zuoying.csv", district: "左營區" },
-  { name: "nanzih.csv", district: "楠梓區" },
-  { name: "gushan.csv", district: "鼓山區" },
-  { name: "renwu.csv", district: "仁武區" },
-  { name: "linyuan.csv", district: "林園區" },
-  { name: "dashu.csv", district: "大樹區" },
-  { name: "dashe.csv", district: "大社區" },
-  { name: "qieding.csv", district: "茄萣區" },
-  { name: "qianjin.csv", district: "前金區" },
-  { name: "yancheng.csv", district: "鹽埕區" },
-  { name: "qijin.csv", district: "旗津區" },
-  { name: "qiaotou.csv", district: "橋頭區" },
-  { name: "yanchao.csv", district: "燕巢區" },
-  { name: "alian.csv", district: "阿蓮區" },
-  { name: "mituo.csv", district: "彌陀區" },
-  { name: "neimen.csv", district: "內門區" },
-  { name: "meinong.csv", district: "美濃區" },
-  { name: "xinxing.csv", district: "新興區" },
-  { name: "gangshan.csv", district: "岡山區" },
-  { name: "luzhu.csv", district: "路竹區" },
-  { name: "hunei.csv", district: "湖內區" },
-  { name: "yongan.csv", district: "永安區" },
-  { name: "ziguan.csv", district: "梓官區" },
-  { name: "tianliao.csv", district: "田寮區" },
-  { name: "qishan.csv", district: "旗山區" },
-  { name: "liugui.csv", district: "六龜區" },
-  { name: "jiaxian.csv", district: "甲仙區" },
-  { name: "niaosong.csv", district: "鳥松區" },
-  { name: "xiaogang.csv", district: "小港區" },
-  { name: "shanlin.csv", district: "杉林區" },
-  { name: "taoyuan.csv", district: "桃源區" },
-  { name: "maolin.csv", district: "茂林區" },
-  { name: "namaxia.csv", district: "那瑪夏區" }
-];
+      <div class="button-row">
+        <button id="searchButton" class="primary" type="submit" disabled>資料載入中...</button>
+        <button id="resetButton" class="secondary" type="button">清除篩選條件</button>
+      </div>
+    </form>
 
+    <div class="notice">
+      「資源回收日」不一定等於「一般垃圾清運日」。
+      大部分原始 CSV 只有回收日欄位；選擇「一般垃圾清運日」時，
+      僅會搜尋有明確提供該欄位的紀錄。
+    </div>
 
-function loadCSV(file) {
-  return new Promise((resolve, reject) => {
-    Papa.parse(file.name, {
-      download: true,
-      header: true,
-      skipEmptyLines: "greedy",
+    <p id="dataStatus" class="status" role="status">正在讀取 CSV 資料...</p>
+    <p id="filterNotice" class="hint warning" aria-live="polite"></p>
 
-      complete: function(result) {
-        const rows = result.data
-          .filter(row => row["停留地點"])
-          .map(row => {
+    <h2 class="results-heading">搜尋結果</h2>
+    <p id="resultStatus" aria-live="polite">載入完成後即可搜尋。</p>
+    <div id="results"></div>
+    <button id="moreButton" type="button" class="secondary" hidden>顯示更多</button>
 
-            // 讀取 CSV 原本的行政區
-            const originalDistrict =
-              (row["行政區"] || "").trim();
+    <p class="footer-note">
+      資料來源：高雄市政府環境保護局及部分環境部路線整理資料。
+      本網站提供資料集的表定停靠時間，非即時垃圾車位置。
+      部分行政區資料尚未完整，實際清運資訊請以主管機關公告為準。
+    </p>
+  </main>
 
-            // 預設使用檔案指定的行政區
-            let district = file.district;
-
-            // 把混入的 212 筆大寮區資料分開
-            if (originalDistrict === "大寮區") {
-              district = "大寮區";
-            }
-
-            return {
-              ...row,
-              searchDistrict: district,
-              sourceFile: file.name
-            };
-          });
-
-        resolve(rows);
-      },
-
-      error: function(error) {
-        reject(error);
-      }
-    });
-  });
-}
-
-async function loadAllData() {
-  const status = document.getElementById("status");
-
-  const results = await Promise.allSettled(
-    files.map(file => loadCSV(file))
-  );
-
-  let failedFiles = [];
-
-  results.forEach((result, index) => {
-    if (result.status === "fulfilled") {
-      truckData.push(...result.value);
-    } else {
-      failedFiles.push(files[index].name);
-    }
-  });
-
-  loaded = true;
-
-  const button = document.getElementById("searchButton");
-  button.disabled = false;
-  button.textContent = "查詢垃圾車";
-
-  status.textContent =
-    "已載入 " + truckData.length + " 筆資料";
-
-  if (failedFiles.length > 0) {
-    status.textContent +=
-      "；載入失敗：" + failedFiles.join("、");
-  }
-}
-
-function searchTruck() {
-  const district =
-    document.getElementById("district").value;
-
-  const keyword =
-    document.getElementById("keyword").value.trim();
-
-  const status = document.getElementById("status");
-  const results = document.getElementById("results");
-
-  results.replaceChildren();
-
-  if (!loaded) {
-    status.textContent = "資料尚未載入完成";
-    return;
-  }
-
-  if (!keyword) {
-    status.textContent = "請先輸入街道或停靠地點";
-    return;
-  }
-
-  const matches = truckData.filter(item =>
-    item.searchDistrict === district &&
-    (item["停留地點"] || "").includes(keyword)
-  );
-
-  status.textContent =
-    "找到 " + matches.length + " 筆資料";
-
-  matches.forEach(item => {
-    const card = document.createElement("div");
-    card.className = "card";
-
-    const fields = [
-      ["停靠地點", item["停留地點"]],
-      ["停留時間", item["停留時間"]],
-      ["回收日", item["回收日"] ||
-                 item["回收日(星期)"]],
-      ["行政區", district],
-      ["村里", item["村里"]],
-      ["車次", item["車次"]]
+  <script>
+    const files = [
+      { name: "garbage-truck.csv", district: "前鎮區" },
+      { name: "sanmin-east.csv", district: "三民區" },
+      { name: "sanmin-west.csv", district: "三民區" },
+      { name: "lingya.csv", district: "苓雅區" },
+      { name: "fengshan-north.csv", district: "鳳山區" },
+      { name: "fengshan-south.csv", district: "鳳山區" },
+      { name: "zuoying.csv", district: "左營區" },
+      { name: "nanzih.csv", district: "楠梓區" },
+      { name: "gushan.csv", district: "鼓山區" },
+      { name: "renwu.csv", district: "仁武區" },
+      { name: "linyuan.csv", district: "林園區" },
+      { name: "dashu.csv", district: "大樹區" },
+      { name: "dashe.csv", district: "大社區" },
+      { name: "qieding.csv", district: "茄萣區" },
+      { name: "qianjin.csv", district: "前金區" },
+      { name: "yancheng.csv", district: "鹽埕區" },
+      { name: "qijin.csv", district: "旗津區" },
+      { name: "qiaotou.csv", district: "橋頭區" },
+      { name: "yanchao.csv", district: "燕巢區" },
+      { name: "alian.csv", district: "阿蓮區" },
+      { name: "mituo.csv", district: "彌陀區" },
+      { name: "neimen.csv", district: "內門區" },
+      { name: "meinong.csv", district: "美濃區" },
+      { name: "xinxing.csv", district: "新興區" },
+      { name: "gangshan.csv", district: "岡山區" },
+      { name: "luzhu.csv", district: "路竹區" },
+      { name: "hunei.csv", district: "湖內區" },
+      { name: "yongan.csv", district: "永安區" },
+      { name: "ziguan.csv", district: "梓官區" },
+      { name: "tianliao.csv", district: "田寮區" },
+      { name: "qishan.csv", district: "旗山區" },
+      { name: "liugui.csv", district: "六龜區" },
+      { name: "jiaxian.csv", district: "甲仙區" },
+      { name: "niaosong.csv", district: "鳥松區" },
+      { name: "xiaogang.csv", district: "小港區" },
+      { name: "shanlin.csv", district: "杉林區" },
+      { name: "taoyuan.csv", district: "桃源區" },
+      { name: "maolin.csv", district: "茂林區" },
+      { name: "namaxia.csv", district: "那瑪夏區" }
     ];
 
-    fields.forEach(([label, value]) => {
+    const PAGE_SIZE = 30;
+    let truckData = [];
+    let loaded = false;
+    let currentMatches = [];
+    let visibleCount = 0;
+
+    const $ = (id) => document.getElementById(id);
+
+    function clean(value) {
+      return String(value == null ? "" : value).trim();
+    }
+
+    function normalize(value) {
+      return clean(value).normalize("NFKC").toLowerCase().replace(/\s+/g, "");
+    }
+
+    function getStartMinute(rawTime) {
+      const match = clean(rawTime).match(/([01]?\d|2[0-3]):([0-5]\d)/);
+      if (!match) return null;
+      return Number(match[1]) * 60 + Number(match[2]);
+    }
+
+    function matchesWeekday(raw, day) {
+      if (!day) return true;
+      const text = clean(raw).replace(/\s+/g, "");
+      if (!text) return false;
+      if (/每日|每天|天天/.test(text)) return true;
+      if (/一[至到~～\-]日/.test(text)) return true;
+      if (/一[至到~～\-]六/.test(text) && day !== "日") return true;
+      return text.includes(day);
+    }
+
+    function matchesPeriod(minute, period) {
+      if (!period) return true;
+      if (minute === null) return false;
+      const ranges = {
+        morning: [360, 720],
+        afternoon: [720, 1020],
+        evening: [1020, 1200],
+        night: [1200, 1440],
+        dawn: [0, 360]
+      };
+      const range = ranges[period];
+      return range ? minute >= range[0] && minute < range[1] : true;
+    }
+
+    function loadCSV(file) {
+      return new Promise((resolve, reject) => {
+        Papa.parse(file.name, {
+          download: true,
+          header: true,
+          skipEmptyLines: "greedy",
+          transformHeader: (header) => clean(header).replace(/^\uFEFF/, ""),
+          complete: (result) => {
+            if (!result.meta.fields || !result.meta.fields.includes("停留地點")) {
+              reject(new Error(file.name + " 缺少「停留地點」欄位"));
+              return;
+            }
+
+            const rows = result.data
+              .filter(row => clean(row["停留地點"]) !== "")
+              .map(row => {
+                const originalDistrict = clean(row["行政區"]);
+                const district = originalDistrict === "大寮區"
+                  ? "大寮區"
+                  : file.district;
+
+                const stopTime = clean(row["停留時間"]);
+                return {
+                  ...row,
+                  searchDistrict: district,
+                  sourceFile: file.name,
+                  villageName: clean(row["村里"]),
+                  recycleDay: clean(row["回收日"]) || clean(row["回收日(星期)"]),
+                  garbageDay: clean(row["一般垃圾日"]) ||
+                              clean(row["一般垃圾清運日"]),
+                  startMinute: getStartMinute(stopTime)
+                };
+              });
+
+            resolve(rows);
+          },
+          error: (error) => reject(error)
+        });
+      });
+    }
+
+    async function loadAllData() {
+      const results = await Promise.allSettled(
+        files.map(file => loadCSV(file))
+      );
+      const failedFiles = [];
+      const allRows = [];
+
+      results.forEach((result, index) => {
+        if (result.status === "fulfilled") {
+          allRows.push(...result.value);
+        } else {
+          failedFiles.push(files[index].name);
+        }
+      });
+
+      truckData = allRows;
+      loaded = true;
+      $("searchButton").disabled = false;
+      $("searchButton").textContent = "搜尋垃圾車";
+
+      $("dataStatus").textContent =
+        "成功載入 " + (files.length - failedFiles.length) +
+        " / " + files.length + " 份 CSV，共 " +
+        truckData.length.toLocaleString("zh-TW") + " 筆有效紀錄。";
+
+      if (failedFiles.length > 0) {
+        $("dataStatus").textContent +=
+          " 載入失敗：" + failedFiles.join("、");
+        $("dataStatus").classList.add("warning");
+      }
+
+      updateVillages();
+      $("resultStatus").textContent = "資料已載入，請輸入條件並按「搜尋垃圾車」。";
+    }
+
+    function updateVillages() {
+      const district = $("district").value;
+      const villageSelect = $("village");
+      villageSelect.replaceChildren();
+
+      const allOption = document.createElement("option");
+      allOption.value = "";
+      allOption.textContent = "全部村里";
+      villageSelect.appendChild(allOption);
+
+      const villages = [...new Set(
+        truckData
+          .filter(row => row.searchDistrict === district)
+          .map(row => row.villageName)
+          .filter(Boolean)
+      )].sort((a, b) => a.localeCompare(b, "zh-Hant"));
+
+      villages.forEach(name => {
+        const option = document.createElement("option");
+        option.value = name;
+        option.textContent = name;
+        villageSelect.appendChild(option);
+      });
+
+      villageSelect.disabled = !loaded || villages.length === 0;
+      updateDayNotice();
+    }
+
+    function updateDayNotice() {
+      const district = $("district").value;
+      const dayType = $("dayType").value;
+      const weekday = $("weekday").value;
+
+      $("filterNotice").textContent = "";
+      if (!loaded || dayType !== "garbage" || !weekday) return;
+
+      const hasGarbageDay = truckData.some(row =>
+        row.searchDistrict === district && row.garbageDay !== ""
+      );
+      if (!hasGarbageDay) {
+        $("filterNotice").textContent =
+          "此區 CSV 尚未提供一般垃圾清運日欄位，無法用一般垃圾日篩選。" +
+          "請改用「資源回收日」，但兩者不可視為同一天。";
+      }
+    }
+
+    function searchTruck() {
+      if (!loaded) return;
+
+      const district = $("district").value;
+      const village = $("village").value;
+      const keyword = normalize($("keyword").value);
+      const dayType = $("dayType").value;
+      const weekday = $("weekday").value;
+      const period = $("period").value;
+      const sortOrder = $("sortOrder").value;
+
+      currentMatches = truckData.filter(item => {
+        if (item.searchDistrict !== district) return false;
+        if (village && item.villageName !== village) return false;
+
+        const placeAndVillage = normalize(
+          clean(item["停留地點"]) + " " + item.villageName
+        );
+        if (keyword && !placeAndVillage.includes(keyword)) return false;
+
+        const selectedDay = dayType === "garbage"
+          ? item.garbageDay
+          : item.recycleDay;
+        if (!matchesWeekday(selectedDay, weekday)) return false;
+
+        return matchesPeriod(item.startMinute, period);
+      });
+
+      currentMatches.sort((a, b) => {
+        if (a.startMinute === null) return b.startMinute === null ? 0 : 1;
+        if (b.startMinute === null) return -1;
+        const difference = a.startMinute - b.startMinute;
+        return sortOrder === "desc" ? -difference : difference;
+      });
+
+      visibleCount = 0;
+      $("results").replaceChildren();
+      $("resultStatus").textContent =
+        "「" + district + "」找到 " +
+        currentMatches.length.toLocaleString("zh-TW") + " 筆資料。";
+
+      updateDayNotice();
+      if (currentMatches.length === 0) {
+        $("moreButton").hidden = true;
+        $("resultStatus").textContent += " 請調整路名、村里、星期或時段。";
+        return;
+      }
+
+      showMore();
+    }
+
+    function addDetail(parent, label, value) {
       const p = document.createElement("p");
-      p.textContent =
-        label + "：" + (value || "未提供");
+      p.className = "detail";
 
-      card.appendChild(p);
+      const strong = document.createElement("strong");
+      strong.textContent = label + "：";
+      p.appendChild(strong);
+      p.appendChild(document.createTextNode(clean(value) || "未提供"));
+
+      parent.appendChild(p);
+    }
+
+    function createResultCard(item) {
+      const card = document.createElement("article");
+      card.className = "card";
+
+      const title = document.createElement("h3");
+      title.textContent = clean(item["停留地點"]);
+      card.appendChild(title);
+
+      const details = document.createElement("div");
+      details.className = "detail-grid";
+
+      addDetail(details, "行政區", item.searchDistrict);
+      addDetail(details, "停留時間", item["停留時間"]);
+      addDetail(details, "村里", item.villageName);
+      addDetail(details, "車次", item["車次"]);
+      addDetail(details, "資源回收日", item.recycleDay);
+      addDetail(details, "一般垃圾日", item.garbageDay);
+
+      card.appendChild(details);
+
+      if (["taoyuan.csv", "maolin.csv", "namaxia.csv", "shanlin.csv"]
+          .includes(item.sourceFile)) {
+        const source = document.createElement("div");
+        source.className = "source";
+        source.textContent = "註：此筆來自環境部路線資料整理版本。";
+        card.appendChild(source);
+      }
+
+      return card;
+    }
+
+    function showMore() {
+      const nextRows = currentMatches.slice(
+        visibleCount, visibleCount + PAGE_SIZE
+      );
+      const fragment = document.createDocumentFragment();
+
+      nextRows.forEach(row => {
+        fragment.appendChild(createResultCard(row));
+      });
+      $("results").appendChild(fragment);
+
+      visibleCount += nextRows.length;
+      $("moreButton").hidden = visibleCount >= currentMatches.length;
+      $("moreButton").textContent =
+        "顯示更多（剩下 " +
+        (currentMatches.length - visibleCount).toLocaleString("zh-TW") +
+        " 筆）";
+
+      $("resultStatus").textContent =
+        "找到 " + currentMatches.length.toLocaleString("zh-TW") +
+        " 筆，已顯示 " + visibleCount.toLocaleString("zh-TW") + " 筆。";
+    }
+
+    function resetFilters() {
+      $("keyword").value = "";
+      $("village").value = "";
+      $("dayType").value = "recycle";
+      $("weekday").value = "";
+      $("period").value = "";
+      $("sortOrder").value = "asc";
+      updateDayNotice();
+
+      $("results").replaceChildren();
+      $("moreButton").hidden = true;
+      $("resultStatus").textContent =
+        "已清除篩選條件。可輸入路名或直接按「搜尋垃圾車」。";
+    }
+
+    $("searchForm").addEventListener("submit", event => {
+      event.preventDefault();
+      searchTruck();
     });
+    $("district").addEventListener("change", () => {
+      updateVillages();
+      resetFilters();
+    });
+    $("dayType").addEventListener("change", updateDayNotice);
+    $("weekday").addEventListener("change", updateDayNotice);
+    $("resetButton").addEventListener("click", resetFilters);
+    $("moreButton").addEventListener("click", showMore);
 
-    results.appendChild(card);
-  });
-}
-
-loadAllData();
-</script>
+    loadAllData();
+  </script>
 </body>
 </html>
