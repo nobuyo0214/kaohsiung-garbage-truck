@@ -411,73 +411,211 @@
     }
 
 
-    // 日期對照表可以指定完整停靠地點/時間，或只對應整條路線。
-    function garbageDayKey(file, zone, car, place, time) {
-      return [file, zone, car, place, time].map(clean).join("\u001f");
-    }
+    
+function normalizeTime(value) {
+  const text = clean(value).normalize("NFKC");
+  const times = [...text.matchAll(
+    /([01]?\d|2[0-3]):([0-5]\d)/g
+  )].map(m => m[1].padStart(2, "0") + ":" + m[2]);
 
-    async function loadGarbageDayMap() {
-      return new Promise(resolve => {
-        Papa.parse("garbage-days.csv", {
-          download: true,
-          header: true,
-          skipEmptyLines: "greedy",
-          transformHeader: h => clean(h).replace(/^\uFEFF/, ""),
-          complete: result => {
-            const needed = ["來源檔案", "責任區", "車次", "停留地點", "停留時間", "一般垃圾日", "官方來源"];
-            if (!needed.every(col => (result.meta.fields || []).includes(col))) {
-              resolve({ok: false, message: "對照表缺少必要欄位"});
-              return;
-            }
-            const validFiles = new Set(files.map(f => f.name));
-            const lookup = new Map();
-            const conflict = new Set();
-            let skipped = 0;
-            for (const row of result.data) {
-              const file = clean(row["來源檔案"]);
-              const zone = clean(row["責任區"]);
-              const car = clean(row["車次"]);
-              const place = clean(row["停留地點"]);
-              const time = clean(row["停留時間"]);
-              const day = clean(row["一般垃圾日"]);
-              const url = clean(row["官方來源"]);
-              if (!validFiles.has(file) || !zone || !car || !day ||
-                  !/^[一二三四五六日、,，\s]+$/.test(day) ||
-                  !/^https:\/\//i.test(url) || (!place && time)) {
-                skipped++;
-                continue;
-              }
-              const key = garbageDayKey(file, zone, car, place, time);
-              if (lookup.has(key) && lookup.get(key) !== day) conflict.add(key);
-              else lookup.set(key, day);
-            }
-            for (const key of conflict) lookup.delete(key);
-            let matched = 0, added = 0;
-            for (const item of truckData) {
-              const file = item.sourceFile;
-              const zone = clean(item["責任區"]);
-              const car = clean(item["車次"]);
-              const place = clean(item["停留地點"]);
-              const time = clean(item["停留時間"]);
-              const keys = [
-                garbageDayKey(file, zone, car, place, time),
-                garbageDayKey(file, zone, car, place, ""),
-                garbageDayKey(file, zone, car, "", "")
-              ];
-              const key = keys.find(k => lookup.has(k));
-              if (!key) continue;
-              matched++;
-              if (!item.garbageDay) {
-                item.garbageDay = lookup.get(key);
-                added++;
-              }
-            }
-            resolve({ok: true, rules: lookup.size, matched, added, skipped, conflicts: conflict.size});
-          },
-          error: () => resolve({ok: false, message: "無法讀取 garbage-days.csv"})
+  return times.join("-");
+}
+
+function garbageDayKey(file, zone, car, place, time) {
+  return [
+    clean(file),
+    clean(zone),
+    clean(car),
+    clean(place).normalize("NFKC"),
+    normalizeTime(time)
+  ].join("\u001f");
+}
+
+function loadGarbageDayMap() {
+  return new Promise(resolve => {
+    Papa.parse("garbage-days.csv", {
+      download: true,
+      header: true,
+      skipEmptyLines: "greedy",
+      transformHeader: h =>
+        clean(h).replace(/^\uFEFF/, ""),
+
+      complete: result => {
+        const required = [
+          "來源檔案", "責任區", "車次",
+          "停留地點", "停留時間",
+          "一般垃圾日", "官方來源"
+        ];
+
+        if (!required.every(c =>
+          (result.meta.fields || []).includes(c))) {
+          resolve({
+            ok: false,
+            message: "日期對照表缺少必要欄位"
+          });
+          return;
+        }
+
+        const validFiles = new Set(
+          files.map(f => f.name)
+        );
+        const rules = new Map();
+        const conflicts = new Set();
+        let skipped = 0;
+
+        // 載入並檢查日期對照規則
+        result.data.forEach(row => {
+          const file = clean(row["來源檔案"]);
+          const zone = clean(row["責任區"]);
+          const car = clean(row["車次"]);
+          const place = clean(row["停留地點"]);
+          const time = normalizeTime(row["停留時間"]);
+          const day = clean(row["一般垃圾日"])
+            .replace(/[，,\s]/g, "、");
+          const url = clean(row["官方來源"]);
+
+          const validDay =
+            /^[一二三四五六日](、[一二三四五六日])*$/
+              .test(day);
+
+          if (
+            !validFiles.has(file) ||
+            !zone || !car ||
+            !validDay ||
+            !url.startsWith("https://") ||
+            (!place && time) ||
+            (clean(row["停留時間"]) && !time)
+          ) {
+            skipped++;
+            return;
+          }
+
+          const key = garbageDayKey(
+            file, zone, car, place, time
+          );
+
+          if (rules.has(key) &&
+              rules.get(key) !== day) {
+            conflicts.add(key);
+          } else {
+            rules.set(key, day);
+          }
         });
-      });
-    }
+
+        conflicts.forEach(key => rules.delete(key));
+
+        // 建立「起始時間」索引
+        // 如果同一站點有多個不同停留時段，
+        // 不使用起始時間做模糊配對。
+        const timeGroups = new Map();
+
+        truckData.forEach(item => {
+          const full = normalizeTime(item["停留時間"]);
+          const start = full.split("-")[0] || "";
+          if (!start) return;
+
+          const key = garbageDayKey(
+            item.sourceFile,
+            item["責任區"],
+            item["車次"],
+            item["停留地點"],
+            start
+          );
+
+          if (!timeGroups.has(key)) {
+            timeGroups.set(key, new Set());
+          }
+          timeGroups.get(key).add(full);
+        });
+
+        let matched = 0;
+        let added = 0;
+        let ambiguous = 0;
+
+        truckData.forEach(item => {
+          const file = item.sourceFile;
+          const zone = item["責任區"];
+          const car = item["車次"];
+          const place = item["停留地點"];
+          const fullTime = normalizeTime(
+            item["停留時間"]
+          );
+          const start = fullTime.split("-")[0] || "";
+
+          const exactKey = garbageDayKey(
+            file, zone, car, place, fullTime
+          );
+
+          const startKey = garbageDayKey(
+            file, zone, car, place, start
+          );
+
+          const placeKey = garbageDayKey(
+            file, zone, car, place, ""
+          );
+
+          const routeKey = garbageDayKey(
+            file, zone, car, "", ""
+          );
+
+          let day = "";
+
+          // 1. 完整時間完全符合
+          if (rules.has(exactKey)) {
+            day = rules.get(exactKey);
+          }
+
+          // 2. 起始時間符合，且無歧義
+          if (!day && start && rules.has(startKey)) {
+            const group = timeGroups.get(startKey);
+
+            if (group && group.size === 1) {
+              day = rules.get(startKey);
+            } else {
+              ambiguous++;
+            }
+          }
+
+          // 3. 官方已核實該停靠地點
+          if (!day && rules.has(placeKey)) {
+            day = rules.get(placeKey);
+          }
+
+          // 4. 官方已核實整條路線
+          if (!day && rules.has(routeKey)) {
+            day = rules.get(routeKey);
+          }
+
+          if (!day) return;
+
+          matched++;
+
+          // 不覆蓋原始 CSV 已有的日期
+          if (!item.garbageDay) {
+            item.garbageDay = day;
+            added++;
+          }
+        });
+
+        resolve({
+          ok: true,
+          rules: rules.size,
+          matched,
+          added,
+          skipped,
+          conflicts: conflicts.size,
+          ambiguous
+        });
+      },
+
+      error: () => resolve({
+        ok: false,
+        message: "無法讀取 garbage-days.csv"
+      })
+    });
+  });
+}
+
 
     async function loadAllData() {
       const results = await Promise.allSettled(
