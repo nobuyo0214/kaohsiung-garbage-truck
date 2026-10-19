@@ -473,23 +473,60 @@
       updateDayNotice();
     }
 
-    function updateDayNotice() {
-      const district = $("district").value;
-      const dayType = $("dayType").value;
-      const weekday = $("weekday").value;
+    
+function updateDayNotice() {
+  const district = $("district").value;
+  const dayType = $("dayType");
+  const garbageOption =
+    dayType.querySelector('option[value="garbage"]');
 
-      $("filterNotice").textContent = "";
-      if (!loaded || dayType !== "garbage" || !weekday) return;
+  const districtRows = truckData.filter(row =>
+    row.searchDistrict === district
+  );
 
-      const hasGarbageDay = truckData.some(row =>
-        row.searchDistrict === district && row.garbageDay !== ""
-      );
-      if (!hasGarbageDay) {
-        $("filterNotice").textContent =
-          "此區 CSV 尚未提供一般垃圾清運日欄位，無法用一般垃圾日篩選。" +
-          "請改用「資源回收日」，但兩者不可視為同一天。";
-      }
+  const availableRows = districtRows.filter(row =>
+    row.garbageDay !== ""
+  );
+
+  const notice = $("filterNotice");
+
+  // 資料還沒載入時
+  if (!loaded) {
+    garbageOption.disabled = true;
+    return;
+  }
+
+  // 此區完全沒有一般垃圾日資料
+  if (availableRows.length === 0) {
+    garbageOption.disabled = true;
+
+    // 如果原本選了垃圾日，自動切回回收日
+    if (dayType.value === "garbage") {
+      dayType.value = "recycle";
     }
+
+    notice.textContent =
+      "此行政區尚未提供一般垃圾清運日，" +
+      "目前只能按資源回收日篩選。兩者日期不一定相同。";
+
+    return;
+  }
+
+  // 此區有部分或全部的一般垃圾日資料
+  garbageOption.disabled = false;
+
+  if (availableRows.length < districtRows.length) {
+    notice.textContent =
+      "注意：此區只有 " +
+      availableRows.length + " / " +
+      districtRows.length +
+      " 筆提供一般垃圾清運日。" +
+      " 使用此條件可能漏掉尚未補齊的站點。";
+  } else {
+    notice.textContent = "";
+  }
+}
+
 
     function searchTruck() {
       if (!loaded) return;
