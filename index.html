@@ -410,6 +410,75 @@
       });
     }
 
+
+    // 日期對照表可以指定完整停靠地點/時間，或只對應整條路線。
+    function garbageDayKey(file, zone, car, place, time) {
+      return [file, zone, car, place, time].map(clean).join("\u001f");
+    }
+
+    async function loadGarbageDayMap() {
+      return new Promise(resolve => {
+        Papa.parse("garbage-days.csv", {
+          download: true,
+          header: true,
+          skipEmptyLines: "greedy",
+          transformHeader: h => clean(h).replace(/^\uFEFF/, ""),
+          complete: result => {
+            const needed = ["來源檔案", "責任區", "車次", "停留地點", "停留時間", "一般垃圾日", "官方來源"];
+            if (!needed.every(col => (result.meta.fields || []).includes(col))) {
+              resolve({ok: false, message: "對照表缺少必要欄位"});
+              return;
+            }
+            const validFiles = new Set(files.map(f => f.name));
+            const lookup = new Map();
+            const conflict = new Set();
+            let skipped = 0;
+            for (const row of result.data) {
+              const file = clean(row["來源檔案"]);
+              const zone = clean(row["責任區"]);
+              const car = clean(row["車次"]);
+              const place = clean(row["停留地點"]);
+              const time = clean(row["停留時間"]);
+              const day = clean(row["一般垃圾日"]);
+              const url = clean(row["官方來源"]);
+              if (!validFiles.has(file) || !zone || !car || !day ||
+                  !/^[一二三四五六日、,，\s]+$/.test(day) ||
+                  !/^https:\/\//i.test(url) || (!place && time)) {
+                skipped++;
+                continue;
+              }
+              const key = garbageDayKey(file, zone, car, place, time);
+              if (lookup.has(key) && lookup.get(key) !== day) conflict.add(key);
+              else lookup.set(key, day);
+            }
+            for (const key of conflict) lookup.delete(key);
+            let matched = 0, added = 0;
+            for (const item of truckData) {
+              const file = item.sourceFile;
+              const zone = clean(item["責任區"]);
+              const car = clean(item["車次"]);
+              const place = clean(item["停留地點"]);
+              const time = clean(item["停留時間"]);
+              const keys = [
+                garbageDayKey(file, zone, car, place, time),
+                garbageDayKey(file, zone, car, place, ""),
+                garbageDayKey(file, zone, car, "", "")
+              ];
+              const key = keys.find(k => lookup.has(k));
+              if (!key) continue;
+              matched++;
+              if (!item.garbageDay) {
+                item.garbageDay = lookup.get(key);
+                added++;
+              }
+            }
+            resolve({ok: true, rules: lookup.size, matched, added, skipped, conflicts: conflict.size});
+          },
+          error: () => resolve({ok: false, message: "無法讀取 garbage-days.csv"})
+        });
+      });
+    }
+
     async function loadAllData() {
       const results = await Promise.allSettled(
         files.map(file => loadCSV(file))
@@ -426,6 +495,7 @@
       });
 
       truckData = allRows;
+      const mapping = await loadGarbageDayMap();
       loaded = true;
       $("searchButton").disabled = false;
       $("searchButton").textContent = "搜尋垃圾車";
@@ -441,6 +511,18 @@
         $("dataStatus").classList.add("warning");
       }
 
+      if (mapping.ok) {
+        $("dataStatus").textContent +=
+          "｜日期對照表 " + mapping.rules + " 條規則，配對 " +
+          mapping.matched + " 筆，新補入 " + mapping.added + " 筆。";
+        if (mapping.skipped || mapping.conflicts) {
+          $("dataStatus").textContent += " 略過 " + mapping.skipped +
+            " 筆，衝突 " + mapping.conflicts + " 條。";
+        }
+      } else {
+        $("dataStatus").textContent += "｜" + mapping.message;
+        $("dataStatus").classList.add("warning");
+      }
       updateVillages();
       $("resultStatus").textContent = "資料已載入，請輸入條件並按「搜尋垃圾車」。";
     }
@@ -473,60 +555,24 @@
       updateDayNotice();
     }
 
-    
-function updateDayNotice() {
-  const district = $("district").value;
-  const dayType = $("dayType");
-  const garbageOption =
-    dayType.querySelector('option[value="garbage"]');
-
-  const districtRows = truckData.filter(row =>
-    row.searchDistrict === district
-  );
-
-  const availableRows = districtRows.filter(row =>
-    row.garbageDay !== ""
-  );
-
-  const notice = $("filterNotice");
-
-  // 資料還沒載入時
-  if (!loaded) {
-    garbageOption.disabled = true;
-    return;
-  }
-
-  // 此區完全沒有一般垃圾日資料
-  if (availableRows.length === 0) {
-    garbageOption.disabled = true;
-
-    // 如果原本選了垃圾日，自動切回回收日
-    if (dayType.value === "garbage") {
-      dayType.value = "recycle";
+    function updateDayNotice() {
+      const district = $("district").value;
+      const type = $("dayType");
+      const garbageOption = type.querySelector('option[value="garbage"]');
+      const districtRows = truckData.filter(row => row.searchDistrict === district);
+      const available = districtRows.filter(row => clean(row.garbageDay));
+      if (!loaded) { garbageOption.disabled = true; return; }
+      garbageOption.disabled = available.length === 0;
+      if (garbageOption.disabled && type.value === "garbage") type.value = "recycle";
+      if (!available.length) {
+        $("filterNotice").textContent = "此區尚未提供一般垃圾清運日，暫時無法使用該日期篩選。資源回收日不可代替一般垃圾日。";
+      } else if (available.length < districtRows.length) {
+        $("filterNotice").textContent = "提醒：此區僅 " + available.length +
+          " / " + districtRows.length + " 筆有一般垃圾日，星期查詢可能漏掉未補齊的站點。";
+      } else {
+        $("filterNotice").textContent = "";
+      }
     }
-
-    notice.textContent =
-      "此行政區尚未提供一般垃圾清運日，" +
-      "目前只能按資源回收日篩選。兩者日期不一定相同。";
-
-    return;
-  }
-
-  // 此區有部分或全部的一般垃圾日資料
-  garbageOption.disabled = false;
-
-  if (availableRows.length < districtRows.length) {
-    notice.textContent =
-      "注意：此區只有 " +
-      availableRows.length + " / " +
-      districtRows.length +
-      " 筆提供一般垃圾清運日。" +
-      " 使用此條件可能漏掉尚未補齊的站點。";
-  } else {
-    notice.textContent = "";
-  }
-}
-
 
     function searchTruck() {
       if (!loaded) return;
