@@ -3,6 +3,8 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
+    "build:site": "node scripts/build-site.cjs",
+    "audit:locations": "node scripts/location-report.cjs",
     "test": "node --test test/*.test.cjs",
     "test:browser": "playwright test",
     "audit": "node scripts/data-tool.cjs audit --out reports",

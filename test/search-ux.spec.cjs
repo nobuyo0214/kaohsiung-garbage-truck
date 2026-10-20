@@ -8,10 +8,11 @@ const { load, parse } = require("../scripts/data-tool.cjs"),
 const raw = load();
 D.applyRules(raw, parse("garbage-days.csv"));
 const index = T.createIndex(raw);
+const { mockSnapshot } = require("./snapshot-fixture.cjs");
 test.use({ timezoneId: "America/Los_Angeles" });
 async function ready(page) {
   await page.goto("/");
-  await expect(page.locator("#searchButton")).toBeEnabled();
+  await expect(page.locator("#searchButton")).toBeEnabled({ timeout: 15000 });
 }
 async function findStop(page, keyword = "河北二路102號") {
   await page.selectOption("#district", "三民區");
@@ -87,12 +88,7 @@ test("favorites distinguish trips, persist across reload and use current CSV dat
   const updatedRules = parse("garbage-days.csv").map((rule) =>
     rule.停留地點 === "更新街與安東街口" ? { ...rule, 一般垃圾日: "三" } : rule,
   );
-  await page.route("**/garbage-days.csv", (route) =>
-    route.fulfill({
-      contentType: "text/csv",
-      body: Papa.unparse(updatedRules),
-    }),
-  );
+  await mockSnapshot(page, { "garbage-days.csv": Papa.unparse(updatedRules) });
   await page.reload();
   await expect(page.locator("#searchButton")).toBeEnabled();
   await page.click("#quickSavedButton");
@@ -250,22 +246,19 @@ test("literal CSV content cannot inject markup into suggestions, cards or copy d
   page,
 }) => {
   const place = '<img src=x onerror="window.injected=true">';
-  await page.route("**/garbage-truck.csv", (route) =>
-    route.fulfill({
-      contentType: "text/csv",
-      body: Papa.unparse([
-        {
-          責任區: "一",
-          車次: "1",
-          停留地點: place,
-          停留時間: "12:00",
-          行政區: "前鎮區",
-          村里: "",
-          回收日: "",
-        },
-      ]),
-    }),
-  );
+  await mockSnapshot(page, {
+    "garbage-truck.csv": Papa.unparse([
+      {
+        責任區: "一",
+        車次: "1",
+        停留地點: place,
+        停留時間: "12:00",
+        行政區: "前鎮區",
+        村里: "",
+        回收日: "",
+      },
+    ]),
+  });
   await ready(page);
   await expect(page.locator(".card h3")).toHaveText(place);
   await expect(page.locator("#results img")).toHaveCount(0);

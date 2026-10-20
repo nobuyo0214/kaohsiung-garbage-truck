@@ -4,6 +4,8 @@ module.exports = defineConfig({
   testMatch: "*.spec.cjs",
   workers: 1,
   use: {
+    // Mocked-network regression tests are isolated; pwa.spec explicitly exercises real workers.
+    serviceWorkers: "block",
     baseURL: "http://127.0.0.1:4173",
     launchOptions: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH
       ? { executablePath: process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH }

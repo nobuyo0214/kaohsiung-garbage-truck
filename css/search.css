@@ -1100,3 +1100,129 @@ dialog form {
       box-shadow 0.15s;
   }
 }
+.stop-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding-top: 10px;
+}
+.stop-actions button,
+.stop-actions a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  min-height: 44px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 8px;
+  font-size: 12px;
+  color: var(--green);
+  text-decoration: none;
+  background: var(--soft);
+}
+.stop-actions button:hover:not(:disabled),
+.stop-actions a:hover {
+  background: #dae9d9;
+}
+.stop-actions button:disabled {
+  cursor: not-allowed;
+}
+.location-unknown {
+  flex: 1;
+  font-size: 11px;
+  color: var(--muted);
+  text-align: center;
+}
+.shared-stop {
+  border: 2px solid var(--green);
+  box-shadow: 0 0 0 4px #dce7d7;
+}
+.shared-label {
+  align-self: flex-start;
+  background: var(--soft);
+  color: var(--green);
+  border-radius: 6px;
+  padding: 3px 9px;
+  margin-bottom: 14px;
+  font-size: 12px;
+}
+.favorites-manager {
+  padding: 14px;
+  margin-top: 15px;
+  background: var(--soft);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.favorites-manager p {
+  font-size: 12px;
+  margin: 8px 0 0;
+  color: var(--muted);
+}
+.backup-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.backup-buttons button,
+#installButton,
+#applyUpdate {
+  border: 1px solid #b9cfbd;
+  padding: 8px 15px;
+  min-height: 44px;
+  border-radius: 8px;
+  font-size: 13px;
+  color: var(--green);
+  background: var(--paper);
+}
+.backup-buttons .primary {
+  background: var(--green);
+  color: white;
+}
+#favoritesImportStatus {
+  color: var(--warning);
+  overflow-wrap: anywhere;
+}
+.source-info,
+.install-info {
+  font-size: 12px;
+  padding: 3px 0;
+}
+.data-health .source-info > summary,
+.data-health .install-info > summary {
+  font-size: 12px;
+  min-height: 44px;
+  padding: 10px 0;
+}
+.data-health .source-info p,
+.data-health .install-info p {
+  margin: 8px 0;
+  line-height: 1.8;
+}
+.source-info dl {
+  margin: 12px 0;
+}
+.source-info dt {
+  font-weight: 650;
+}
+.source-info dd {
+  margin: 2px 0 12px;
+  overflow-wrap: anywhere;
+}
+.app-update {
+  position: fixed;
+  bottom: 16px;
+  right: 16px;
+  z-index: 25;
+  max-width: calc(100% - 32px);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #e9f0df;
+  font-size: 13px;
+  border: 1px solid #b9cfbd;
+  box-shadow: 0 4px 20px #17372430;
+  border-radius: 10px;
+  padding: 10px 14px;
+}

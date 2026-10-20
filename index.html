@@ -4,6 +4,11 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#1c6149" />
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png" />
+    <link rel="icon" href="icons/icon-192.png" type="image/png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="高雄垃圾車" />
     <meta
       name="description"
       content="查詢高雄市38個行政區的垃圾車停靠地點與表定時間，分別查看一般垃圾日及資源回收日，收藏常用站點。"
@@ -15,7 +20,12 @@
     <script defer src="js/data-core.js"></script>
     <script defer src="js/search-tools.js"></script>
     <script defer src="js/search-loader.js"></script>
+    <script defer src="js/site-data.js"></script>
+    <script defer src="js/location-quality.js"></script>
+    <script defer src="js/convenience-core.js"></script>
+    <script defer src="js/convenience-ui.js"></script>
     <script defer src="js/search-app.js"></script>
+    <script defer src="js/pwa.js"></script>
   </head>
   <body>
     <a class="skip-link" href="#searchForm">跳到搜尋</a>
@@ -318,6 +328,26 @@
             </button>
           </div>
           <p id="filterNotice" class="filter-notice" aria-live="polite"></p>
+          <section
+            id="favoritesManager"
+            class="favorites-manager"
+            aria-label="收藏備份管理"
+            hidden
+          >
+            <div class="backup-buttons">
+              <button id="exportFavorites" type="button">匯出收藏</button
+              ><button id="importFavorites" type="button">匯入收藏</button>
+            </div>
+            <label class="sr-only" for="favoritesFile">選取收藏JSON備份</label
+            ><input
+              id="favoritesFile"
+              type="file"
+              accept=".json,application/json"
+              hidden
+            />
+            <p>只備份站點識別，預設合併且最多200筆；不含清運日期或搜尋紀錄。</p>
+            <p id="favoritesImportStatus" role="status"></p>
+          </section>
           <div class="results-summary">
             <p id="resultStatus" role="status">載入完成後即可搜尋。</p>
             <span id="activeContext" class="context-label"></span>
@@ -335,6 +365,72 @@
               <summary>資料載入詳情</summary>
               <p id="dataDetailText"></p>
             </details>
+            <details id="sourceInfo" class="source-info">
+              <summary>資料來源與更新說明</summary>
+              <p>
+                來源為高雄市環保局相關開放資料及部分環境部官方路線整理資料。歷史檔案的逐檔下載版本未完整記錄，本站不補造來源。
+              </p>
+              <p>
+                <a
+                  href="https://data.gov.tw/dataset/106982"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >三民西區開放資料集（僅此區）</a
+                >
+                ·
+                <a
+                  href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&amp;ddsPageID=LINEINFO"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  >環境部路線頁範例（三民西區4）</a
+                >
+              </p>
+              <dl>
+                <dt>官方發布／更新日期</dt>
+                <dd>官方更新日期未提供</dd>
+                <dt>網站原始匯入／更新日期</dt>
+                <dd>歷史紀錄未完整保存，無法確認</dd>
+                <dt>本站資料版本紀錄</dt>
+                <dd id="siteSnapshot">尚未取得</dd>
+                <dt>本次取得資料的時間</dt>
+                <dd id="currentLoadedAt">尚未載入</dd>
+              </dl>
+              <p>
+                資料版本紀錄只是本站保存檔案雜湊的時間；本次取得時間也不是官方更新日。日期表讀取失敗時，僅顯示原始CSV已有的日期。
+              </p>
+              <p>
+                一般垃圾日與資源回收日分開使用；「尚未提供」不代表沒有垃圾車。表定時間不是實際到站時間，本站沒有即時GPS位置。
+              </p>
+              <p>
+                本站為表定停靠資訊查詢，非即時 GPS
+                定位；實際清運以主管機關公告為準。
+              </p>
+              <p>
+                導航僅使用通過保守品質檢查的原始座標，並非逐站現勘確認。接近簡化區界、衝突或可疑位置不提供導航。<a
+                  href="reports/location-quality/summary.json"
+                  >座標檢查統計</a
+                >
+                · <a href="data/geo/provenance.json">範圍圖資來源與限制</a>
+              </p>
+            </details>
+            <details id="installInfo" class="install-info">
+              <summary>加入手機主畫面</summary>
+              <p>
+                Android
+                Chrome：開啟瀏覽器選單，選擇「安裝應用程式」或「加到主畫面」（名稱依版本而異）。iPhone
+                Safari：按分享，再選「加入主畫面」。
+              </p>
+              <button id="installButton" type="button" hidden>
+                安裝高雄垃圾車
+              </button>
+              <p id="installStatus" role="status">
+                安裝選項依瀏覽器支援而定。離線僅能開啟介面與管理收藏備份，無法更新或搜尋清運資訊。
+              </p>
+            </details>
+            <div id="appUpdate" class="app-update" role="status" hidden>
+              <span>有新版可用。</span
+              ><button id="applyUpdate" type="button">重新載入新版</button>
+            </div>
           </div>
         </section>
       </div>
@@ -344,7 +440,9 @@
           <p>
             資料來源：高雄市政府環境保護局及部分環境部路線整理資料。<br />本站提供表定停靠時間，實際清運請以主管機關公告為準。
           </p>
-          <p>收藏與最近搜尋只保存在此瀏覽器，清除網站資料後會移除。</p>
+          <p>
+            收藏與最近搜尋保存在此瀏覽器；收藏可匯出JSON備份，清除網站資料後本機紀錄會移除。
+          </p>
         </div>
         <details class="admin-links">
           <summary>資料管理工具</summary>
@@ -363,6 +461,19 @@
       <label class="sr-only" for="copyText">停靠資訊文字</label
       ><textarea id="copyText" readonly rows="6"></textarea>
       <form method="dialog"><button class="primary">完成</button></form>
+    </dialog>
+    <dialog id="favoritesPreview" aria-labelledby="favoritesPreviewHeading">
+      <h2 id="favoritesPreviewHeading">確認合併收藏</h2>
+      <p id="favoritesPreviewText"></p>
+      <p>
+        不存在、識別不完整或有歧義的站點仍保留識別，不會改配相似站點。原有搜尋紀錄不受影響。
+      </p>
+      <div class="backup-buttons">
+        <button id="confirmFavoritesImport" class="primary" type="button">
+          合併收藏
+        </button>
+        <form method="dialog"><button type="submit">取消</button></form>
+      </div>
     </dialog>
     <noscript
       ><p class="noscript">

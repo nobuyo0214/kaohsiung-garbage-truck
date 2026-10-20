@@ -1,0 +1,216 @@
+{
+  "policyVersion": 1,
+  "totalSourceRecords": 13871,
+  "eligibleSourceRecords": 9022,
+  "unavailableSourceRecords": 4849,
+  "displayCards": 13868,
+  "eligibleCards": 9022,
+  "unavailableCards": 4846,
+  "reasons": {
+    "missing": 1138,
+    "boundary_uncertain": 2419,
+    "district_mismatch": 183,
+    "place_conflict": 96,
+    "shared_coordinate": 1099,
+    "outside_city": 78,
+    "low_precision": 11,
+    "invalid": 15,
+    "district_label": 2,
+    "swapped": 8,
+    "identity_conflict": 4
+  },
+  "districts": {
+    "前鎮區": {
+      "total": 1009,
+      "eligible": 613,
+      "unavailable": 396
+    },
+    "三民區": {
+      "total": 1525,
+      "eligible": 881,
+      "unavailable": 644
+    },
+    "大寮區": {
+      "total": 212,
+      "eligible": 144,
+      "unavailable": 68
+    },
+    "苓雅區": {
+      "total": 191,
+      "eligible": 49,
+      "unavailable": 142
+    },
+    "鳳山區": {
+      "total": 2462,
+      "eligible": 1717,
+      "unavailable": 745
+    },
+    "左營區": {
+      "total": 197,
+      "eligible": 142,
+      "unavailable": 55
+    },
+    "楠梓區": {
+      "total": 1160,
+      "eligible": 846,
+      "unavailable": 314
+    },
+    "鼓山區": {
+      "total": 497,
+      "eligible": 302,
+      "unavailable": 195
+    },
+    "仁武區": {
+      "total": 1091,
+      "eligible": 832,
+      "unavailable": 259
+    },
+    "林園區": {
+      "total": 332,
+      "eligible": 319,
+      "unavailable": 13
+    },
+    "大樹區": {
+      "total": 146,
+      "eligible": 86,
+      "unavailable": 60
+    },
+    "大社區": {
+      "total": 223,
+      "eligible": 187,
+      "unavailable": 36
+    },
+    "茄萣區": {
+      "total": 123,
+      "eligible": 73,
+      "unavailable": 50
+    },
+    "前金區": {
+      "total": 181,
+      "eligible": 54,
+      "unavailable": 127
+    },
+    "鹽埕區": {
+      "total": 159,
+      "eligible": 38,
+      "unavailable": 121
+    },
+    "旗津區": {
+      "total": 168,
+      "eligible": 137,
+      "unavailable": 31
+    },
+    "橋頭區": {
+      "total": 265,
+      "eligible": 240,
+      "unavailable": 25
+    },
+    "燕巢區": {
+      "total": 101,
+      "eligible": 65,
+      "unavailable": 36
+    },
+    "阿蓮區": {
+      "total": 460,
+      "eligible": 212,
+      "unavailable": 248
+    },
+    "彌陀區": {
+      "total": 413,
+      "eligible": 299,
+      "unavailable": 114
+    },
+    "內門區": {
+      "total": 221,
+      "eligible": 67,
+      "unavailable": 154
+    },
+    "美濃區": {
+      "total": 268,
+      "eligible": 121,
+      "unavailable": 147
+    },
+    "新興區": {
+      "total": 116,
+      "eligible": 50,
+      "unavailable": 66
+    },
+    "岡山區": {
+      "total": 318,
+      "eligible": 278,
+      "unavailable": 40
+    },
+    "路竹區": {
+      "total": 227,
+      "eligible": 182,
+      "unavailable": 45
+    },
+    "湖內區": {
+      "total": 184,
+      "eligible": 146,
+      "unavailable": 38
+    },
+    "永安區": {
+      "total": 82,
+      "eligible": 70,
+      "unavailable": 12
+    },
+    "梓官區": {
+      "total": 393,
+      "eligible": 241,
+      "unavailable": 152
+    },
+    "田寮區": {
+      "total": 59,
+      "eligible": 48,
+      "unavailable": 11
+    },
+    "旗山區": {
+      "total": 404,
+      "eligible": 218,
+      "unavailable": 186
+    },
+    "六龜區": {
+      "total": 240,
+      "eligible": 110,
+      "unavailable": 130
+    },
+    "甲仙區": {
+      "total": 146,
+      "eligible": 103,
+      "unavailable": 43
+    },
+    "鳥松區": {
+      "total": 60,
+      "eligible": 59,
+      "unavailable": 1
+    },
+    "小港區": {
+      "total": 118,
+      "eligible": 93,
+      "unavailable": 25
+    },
+    "杉林區": {
+      "total": 83,
+      "eligible": 0,
+      "unavailable": 83
+    },
+    "桃源區": {
+      "total": 15,
+      "eligible": 0,
+      "unavailable": 15
+    },
+    "茂林區": {
+      "total": 3,
+      "eligible": 0,
+      "unavailable": 3
+    },
+    "那瑪夏區": {
+      "total": 19,
+      "eligible": 0,
+      "unavailable": 19
+    }
+  },
+  "geometrySHA256": "5ba138622d5cf7a12aeab87b9a1bc26b090dc59cb6090e9f2400659bcaeea0b7",
+  "note": "原因可重疊。通過表示原始座標符合保守品質政策，不代表官方逐站重新確認；未修正任何座標。"
+}
