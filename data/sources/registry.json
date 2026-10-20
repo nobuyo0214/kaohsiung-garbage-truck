@@ -1,0 +1,384 @@
+{
+  "version": 1,
+  "sources": [
+    {
+      "id": "legacy-west",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "",
+      "format": "normalized-csv",
+      "snapshot": "data/official/sanmin-west.csv",
+      "snapshotMetadata": {
+        "acquiredAt": "",
+        "acquisitionMethod": "legacy-transcription",
+        "officialUpdatedAt": ""
+      },
+      "title": "PR #1 三民西區既有轉錄"
+    },
+    {
+      "id": "moenv-p0",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731395551&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p0.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民東區3",
+      "zoneHint": "3",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p1",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6971101037&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p1.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民東區13",
+      "zoneHint": "13",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p2",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6351101099&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p2.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民東區配套1",
+      "zoneHint": "配套1",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p3",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6971395832&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p3.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民東區配套2",
+      "zoneHint": "配套2",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p4",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6231326102&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p4.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民西區2",
+      "zoneHint": "2",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p4-page2",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6231326102&ddsPageID=LINEINFO&p=2",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p4-page2.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "last week"
+      },
+      "title": "三民西區2",
+      "zoneHint": "2",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p5",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739454352&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p5.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民西區3",
+      "zoneHint": "3",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p5-page2",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739454352&ddsPageID=LINEINFO&p=2",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p5-page2.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "2 months ago"
+      },
+      "title": "三民西區3",
+      "zoneHint": "3",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p6",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6851225544&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p6.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "三民西區配套",
+      "zoneHint": "配套",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p7",
+      "sourceFile": "gangshan.csv",
+      "district": "岡山區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471307984&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p7.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "第七責任區",
+      "zoneHint": "第七責任區",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "moenv-p8",
+      "sourceFile": "gangshan.csv",
+      "district": "岡山區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731149459&ddsPageID=LINEINFO",
+      "format": "moenv-text",
+      "snapshot": "data/sources/raw/moenv-p8.txt",
+      "snapshotMetadata": {
+        "acquiredAt": "2026-10-20T15:37:45Z",
+        "acquisitionMethod": "search-cache",
+        "officialUpdatedAt": "",
+        "cacheDescription": "today"
+      },
+      "title": "日間配套點",
+      "zoneHint": "日間配套點",
+      "downloadFormat": "moenv-html",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "kcg-east-csv",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://data.kcg.gov.tw/File/DirectDownload/a1e813f1-ae52-4b22-9fa7-e15512e41186",
+      "format": "csv",
+      "downloadFormat": "csv",
+      "title": "kcg-east-csv",
+      "licenseNote": "政府資料開放授權條款第1版（data.gov.tw/dataset/107050 或 106982 的實際下載連結）；已公告欄位只有回收日",
+      "catalogURL": "https://data.gov.tw/dataset/107050",
+      "catalogUpdatedAt": "2025-06-30 12:40"
+    },
+    {
+      "id": "kcg-west-csv",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://data.kcg.gov.tw/File/DirectDownload/7ce09ffa-17e1-4f1a-ab72-3d55ca95b2e5",
+      "format": "csv",
+      "downloadFormat": "csv",
+      "title": "kcg-west-csv",
+      "licenseNote": "政府資料開放授權條款第1版（data.gov.tw/dataset/107050 或 106982 的實際下載連結）；已公告欄位只有回收日",
+      "catalogURL": "https://data.gov.tw/dataset/106982",
+      "catalogUpdatedAt": "2025-06-30 14:52"
+    },
+    {
+      "id": "kcg-east-json",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://openapi.kcg.gov.tw/Api/Service/Get/a1e813f1-ae52-4b22-9fa7-e15512e41186",
+      "format": "json",
+      "downloadFormat": "json",
+      "title": "kcg-east-json",
+      "licenseNote": "政府資料開放授權條款第1版（data.gov.tw/dataset/107050 或 106982 的實際下載連結）；已公告欄位只有回收日",
+      "catalogURL": "https://data.gov.tw/dataset/107050",
+      "catalogUpdatedAt": "2025-06-30 12:40"
+    },
+    {
+      "id": "existing-6971148130",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6971148130&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "十",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6851148047",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6851148047&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "一",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6611395563",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6611395563&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "四",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6731326057",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731326057&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "十六",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6731101051",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731101051&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "十五",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-5357428294",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5357428294&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "十一",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6731100956",
+      "sourceFile": "sanmin-east.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731100956&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "五",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6851225449",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6851225449&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "一",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-5739844254",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "四",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    },
+    {
+      "id": "existing-6471148285",
+      "sourceFile": "sanmin-west.csv",
+      "district": "三民區",
+      "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471148285&ddsPageID=LINEINFO",
+      "format": "moenv-html",
+      "downloadFormat": "moenv-html",
+      "title": "既有日期表引用官方路線（尚未重新取得）",
+      "zoneHint": "六",
+      "licenseNote": "路線頁連結的環境部網站資料開放宣告，採 CC BY 4.0，保留出處；不代表官方認可本專案",
+      "licenseURL": "https://www.moenv.gov.tw/announcement/publicdeclare/913.html"
+    }
+  ]
+}
