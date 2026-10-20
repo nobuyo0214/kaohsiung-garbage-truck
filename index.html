@@ -1,288 +1,373 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="查詢高雄市38個行政區的垃圾車停靠地點、時間與資源回收日。">
-  <title>高雄市垃圾車查詢系統</title>
-  <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-
-  <style>
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      background: #f3f6f8;
-      color: #263238;
-      font-family: Arial, "Microsoft JhengHei", sans-serif;
-      line-height: 1.6;
-    }
-    header {
-      background: linear-gradient(135deg, #216b49, #409866);
-      color: white;
-      text-align: center;
-      padding: 36px 16px;
-    }
-    header h1 { margin: 0 0 5px; font-size: 29px; }
-    header p { margin: 0; opacity: .95; }
-    main {
-      max-width: 950px;
-      margin: 26px auto;
-      padding: 24px;
-      background: white;
-      border-radius: 14px;
-      box-shadow: 0 5px 22px rgba(0,0,0,.06);
-    }
-    h2 { margin-top: 0; }
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 13px 18px;
-    }
-    .field { min-width: 0; }
-    .field.full { grid-column: 1 / -1; }
-    label {
-      display: block;
-      font-weight: bold;
-      margin-bottom: 5px;
-    }
-    input, select, button {
-      font: inherit;
-      font-size: 16px;
-      border-radius: 8px;
-    }
-    input, select {
-      width: 100%;
-      padding: 11px;
-      border: 1px solid #bbc8c0;
-      background: white;
-      color: #263238;
-    }
-    input:focus, select:focus {
-      outline: 2px solid #83c39f;
-      border-color: #267951;
-    }
-    .hint {
-      margin: 6px 0 0;
-      color: #647169;
-      font-size: 13px;
-    }
-    .button-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 20px;
-    }
-    button {
-      padding: 10px 19px;
-      border: none;
-      cursor: pointer;
-      font-weight: bold;
-    }
-    button:disabled { opacity: .55; cursor: not-allowed; }
-    .primary { background: #267951; color: white; }
-    .primary:hover:not(:disabled) { background: #195e3d; }
-    .secondary { background: #e9f1ec; color: #225d41; }
-    .secondary:hover { background: #d5e8da; }
-    .notice {
-      margin-top: 18px;
-      padding: 12px 14px;
-      border-left: 4px solid #267951;
-      background: #f1f8f3;
-      color: #365343;
-      border-radius: 4px;
-      font-size: 14px;
-    }
-    .status {
-      margin-top: 16px;
-      padding: 12px 14px;
-      border-radius: 8px;
-      background: #f4f6f7;
-      font-size: 14px;
-      overflow-wrap: anywhere;
-    }
-    .warning { color: #9b4b11; }
-    .results-heading {
-      margin: 25px 0 12px;
-      font-size: 20px;
-    }
-    .card {
-      border: 1px solid #e0e6e3;
-      border-radius: 12px;
-      padding: 16px;
-      margin-bottom: 12px;
-      background: #fff;
-    }
-    .card h3 {
-      margin: 0 0 12px;
-      color: #216b49;
-      font-size: 18px;
-      overflow-wrap: anywhere;
-    }
-    .detail-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 7px 16px;
-      font-size: 14px;
-    }
-    .detail { margin: 0; overflow-wrap: anywhere; }
-    .detail strong { color: #53635a; }
-    .card .source { margin-top: 10px; font-size: 12px; color: #69746d; }
-    #moreButton { display: block; margin: 18px auto 0; }
-    #moreButton[hidden] { display: none; }
-    .footer-note { margin-top: 28px; color: #67736b; font-size: 13px; }
-    @media (max-width: 620px) {
-      main { margin: 12px; padding: 17px; }
-      header { padding: 25px 12px; }
-      header h1 { font-size: 23px; }
-      .form-grid, .detail-grid { grid-template-columns: 1fr; }
-      .field.full { grid-column: auto; }
-      .button-row button { flex: 1; }
-    }
-  </style>
-</head>
-
-<body>
-  <header>
-    <h1>高雄市垃圾車查詢系統</h1>
-    <p>38 區停靠地點 · 時間 · 回收日查詢</p>
-  </header>
-
-  <main>
-    <h2>進階路線查詢</h2>
-
-    <form id="searchForm">
-      <div class="form-grid">
-        <div class="field">
-          <label for="district">行政區</label>
-          <select id="district">
-            <option value="前鎮區">前鎮區</option>
-            <option value="三民區">三民區</option>
-            <option value="苓雅區">苓雅區</option>
-            <option value="鳳山區">鳳山區</option>
-            <option value="左營區">左營區</option>
-            <option value="楠梓區">楠梓區</option>
-            <option value="鼓山區">鼓山區</option>
-            <option value="仁武區">仁武區</option>
-            <option value="林園區">林園區</option>
-            <option value="大樹區">大樹區</option>
-            <option value="大社區">大社區</option>
-            <option value="茄萣區">茄萣區</option>
-            <option value="大寮區">大寮區</option>
-            <option value="前金區">前金區</option>
-            <option value="鹽埕區">鹽埕區</option>
-            <option value="旗津區">旗津區</option>
-            <option value="橋頭區">橋頭區</option>
-            <option value="燕巢區">燕巢區</option>
-            <option value="阿蓮區">阿蓮區</option>
-            <option value="彌陀區">彌陀區</option>
-            <option value="內門區">內門區</option>
-            <option value="美濃區">美濃區</option>
-            <option value="新興區">新興區</option>
-            <option value="岡山區">岡山區</option>
-            <option value="路竹區">路竹區</option>
-            <option value="湖內區">湖內區</option>
-            <option value="永安區">永安區</option>
-            <option value="梓官區">梓官區</option>
-            <option value="田寮區">田寮區</option>
-            <option value="旗山區">旗山區</option>
-            <option value="六龜區">六龜區</option>
-            <option value="甲仙區">甲仙區</option>
-            <option value="鳥松區">鳥松區</option>
-            <option value="小港區">小港區</option>
-            <option value="杉林區">杉林區</option>
-            <option value="桃源區">桃源區</option>
-            <option value="茂林區">茂林區</option>
-            <option value="那瑪夏區">那瑪夏區</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="village">村里</label>
-          <select id="village" disabled>
-            <option value="">全部村里</option>
-          </select>
-          <p class="hint">依所選行政區自動更新；未提供村里的紀錄仍可用地點搜尋。</p>
-        </div>
-
-        <div class="field full">
-          <label for="keyword">街道、巷弄或停靠地點</label>
-          <input id="keyword" type="search" placeholder="例如：瑞隆路、建工路、杉林國中">
-          <p class="hint">可以留空，直接查看該區的資料。</p>
-        </div>
-
-        <div class="field">
-          <label for="dayType">星期篩選依據</label>
-          <select id="dayType">
-            <option value="recycle">資源回收日</option>
-            <option value="garbage">一般垃圾清運日（部分資料提供）</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="weekday">星期</label>
-          <select id="weekday">
-            <option value="">全部星期</option>
-            <option value="一">星期一</option>
-            <option value="二">星期二</option>
-            <option value="三">星期三</option>
-            <option value="四">星期四</option>
-            <option value="五">星期五</option>
-            <option value="六">星期六</option>
-            <option value="日">星期日</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="period">停留時間</label>
-          <select id="period">
-            <option value="">全部時間</option>
-            <option value="morning">早上（06:00～11:59）</option>
-            <option value="afternoon">下午（12:00～16:59）</option>
-            <option value="evening">傍晚（17:00～19:59）</option>
-            <option value="night">晚上（20:00～23:59）</option>
-            <option value="dawn">凌晨（00:00～05:59）</option>
-          </select>
-        </div>
-
-        <div class="field">
-          <label for="sortOrder">搜尋結果排序</label>
-          <select id="sortOrder">
-            <option value="asc">時間由早到晚</option>
-            <option value="desc">時間由晚到早</option>
-          </select>
-        </div>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#1c6149" />
+    <meta
+      name="description"
+      content="查詢高雄市38個行政區的垃圾車停靠地點與表定時間，分別查看一般垃圾日及資源回收日，收藏常用站點。"
+    />
+    <title>高雄市垃圾車查詢系統</title>
+    <link rel="stylesheet" href="css/search.css" />
+    <script defer src="js/vendor/papaparse.min.js"></script>
+    <script defer src="js/route-files.js"></script>
+    <script defer src="js/data-core.js"></script>
+    <script defer src="js/search-tools.js"></script>
+    <script defer src="js/search-loader.js"></script>
+    <script defer src="js/search-app.js"></script>
+  </head>
+  <body>
+    <a class="skip-link" href="#searchForm">跳到搜尋</a>
+    <header class="site-header">
+      <a class="brand" href="./" aria-label="高雄市垃圾車查詢系統首頁">
+        <span class="brand-mark" aria-hidden="true"
+          ><svg viewBox="0 0 32 32" fill="none">
+            <path
+              d="M4 9h15v13H4zM19 14h5l4 5v3h-9"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <circle cx="10" cy="23" r="3" fill="currentColor" />
+            <circle cx="23" cy="23" r="3" fill="currentColor" />
+            <path
+              d="m8 14 3 3 4-5"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+            /></svg
+        ></span>
+        <span>高雄垃圾車<span class="brand-caption">停靠資訊查詢</span></span>
+      </a>
+      <div class="header-controls">
+        <span class="header-tag"
+          ><span class="status-dot"></span>全市 38 區</span
+        >
+        <button
+          id="quickSavedButton"
+          class="header-saved"
+          type="button"
+          disabled
+        >
+          我的收藏 <span aria-hidden="true">↗</span>
+        </button>
       </div>
-
-      <div class="button-row">
-        <button id="searchButton" class="primary" type="submit" disabled>資料載入中...</button>
-        <button id="resetButton" class="secondary" type="button">清除篩選條件</button>
+    </header>
+    <main class="page-shell">
+      <section class="hero" aria-labelledby="pageTitle">
+        <div>
+          <p class="eyebrow">把日常，整理得剛剛好</p>
+          <h1 id="pageTitle">倒垃圾的時間，<br /><span>一查就清楚。</span></h1>
+          <p class="hero-description">
+            選行政區、輸入街道，找到你常去的停靠站。
+          </p>
+          <p class="schedule-label">
+            <span class="status-dot"></span>表定停靠資訊・非即時車輛位置
+          </p>
+        </div>
+        <div class="route-art" aria-hidden="true">
+          <svg viewBox="0 0 380 210" fill="none">
+            <rect
+              x="43"
+              y="22"
+              width="284"
+              height="166"
+              rx="24"
+              fill="#e5ede5"
+              transform="rotate(-6 185 105)"
+            />
+            <rect
+              x="56"
+              y="17"
+              width="284"
+              height="166"
+              rx="24"
+              fill="#f7f8ed"
+              stroke="#d8e3d7"
+            />
+            <path
+              d="M62 62h272M62 138h272M126 22v155M264 22v155"
+              stroke="#e5eadf"
+              stroke-width="13"
+            />
+            <path
+              d="M92 141h61V82h98v53h49"
+              stroke="#71a080"
+              stroke-width="5"
+              stroke-linecap="round"
+              stroke-dasharray="2 11"
+            />
+            <circle
+              cx="92"
+              cy="141"
+              r="9"
+              fill="#f7f8ed"
+              stroke="#1c6149"
+              stroke-width="4"
+            />
+            <path
+              d="M285 123c-12-17-23-28-23-42a23 23 0 0 1 46 0c0 14-11 25-23 42Z"
+              fill="#1c6149"
+            />
+            <circle cx="285" cy="81" r="8" fill="#f7f8ed" />
+            <rect
+              x="133"
+              y="65"
+              width="73"
+              height="45"
+              rx="12"
+              fill="#1c6149"
+            />
+            <path
+              d="M147 79h26v19h-26zM173 84h10l9 9v5h-19"
+              stroke="#fff"
+              stroke-width="2"
+              stroke-linejoin="round"
+            />
+            <circle cx="156" cy="100" r="5" fill="#e4bd67" />
+            <circle cx="184" cy="100" r="5" fill="#e4bd67" />
+            <circle cx="47" cy="48" r="7" fill="#e4bd67" />
+            <path
+              d="M325 154v23m-11-11h22"
+              stroke="#9cb39b"
+              stroke-width="3"
+              stroke-linecap="round"
+            />
+          </svg>
+        </div>
+      </section>
+      <div class="workspace">
+        <aside class="search-panel" aria-labelledby="searchHeading">
+          <div class="panel-heading">
+            <span class="step-label">01</span>
+            <h2 id="searchHeading">從哪裡開始找？</h2>
+          </div>
+          <form id="searchForm">
+            <div class="form-grid">
+              <div class="field">
+                <label for="district">行政區</label
+                ><select id="district">
+                  <option value="前鎮區">前鎮區</option>
+                  <option value="三民區">三民區</option>
+                  <option value="苓雅區">苓雅區</option>
+                  <option value="鳳山區">鳳山區</option>
+                  <option value="左營區">左營區</option>
+                  <option value="楠梓區">楠梓區</option>
+                  <option value="鼓山區">鼓山區</option>
+                  <option value="仁武區">仁武區</option>
+                  <option value="林園區">林園區</option>
+                  <option value="大樹區">大樹區</option>
+                  <option value="大社區">大社區</option>
+                  <option value="茄萣區">茄萣區</option>
+                  <option value="大寮區">大寮區</option>
+                  <option value="前金區">前金區</option>
+                  <option value="鹽埕區">鹽埕區</option>
+                  <option value="旗津區">旗津區</option>
+                  <option value="橋頭區">橋頭區</option>
+                  <option value="燕巢區">燕巢區</option>
+                  <option value="阿蓮區">阿蓮區</option>
+                  <option value="彌陀區">彌陀區</option>
+                  <option value="內門區">內門區</option>
+                  <option value="美濃區">美濃區</option>
+                  <option value="新興區">新興區</option>
+                  <option value="岡山區">岡山區</option>
+                  <option value="路竹區">路竹區</option>
+                  <option value="湖內區">湖內區</option>
+                  <option value="永安區">永安區</option>
+                  <option value="梓官區">梓官區</option>
+                  <option value="田寮區">田寮區</option>
+                  <option value="旗山區">旗山區</option>
+                  <option value="六龜區">六龜區</option>
+                  <option value="甲仙區">甲仙區</option>
+                  <option value="鳥松區">鳥松區</option>
+                  <option value="小港區">小港區</option>
+                  <option value="杉林區">杉林區</option>
+                  <option value="桃源區">桃源區</option>
+                  <option value="茂林區">茂林區</option>
+                  <option value="那瑪夏區">那瑪夏區</option>
+                </select>
+              </div>
+              <div class="field">
+                <label for="village">村里</label
+                ><select id="village" disabled>
+                  <option value="">全部村里</option>
+                </select>
+              </div>
+              <div class="field full">
+                <label for="keyword">街道、巷弄或停靠地點</label
+                ><input
+                  id="keyword"
+                  type="search"
+                  maxlength="200"
+                  list="keywordSuggestions"
+                  autocomplete="off"
+                  placeholder="例如：瑞隆路、建工路"
+                  aria-describedby="keywordHint"
+                /><datalist id="keywordSuggestions"></datalist>
+                <p id="keywordHint" class="hint">
+                  輸入地點可看本區站點建議，也可留空查看全區。
+                </p>
+              </div>
+            </div>
+            <details id="advancedFilters" open>
+              <summary class="filter-divider">
+                <span>星期、時段與排序</span
+                ><span class="filter-toggle">選填</span>
+              </summary>
+              <div class="form-grid secondary-filters">
+                <div class="field">
+                  <label for="dayType">星期篩選依據</label
+                  ><select id="dayType">
+                    <option value="recycle">資源回收日</option>
+                    <option value="garbage">一般垃圾清運日</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="weekday">星期</label
+                  ><select id="weekday">
+                    <option value="">全部星期</option>
+                    <option value="一">星期一</option>
+                    <option value="二">星期二</option>
+                    <option value="三">星期三</option>
+                    <option value="四">星期四</option>
+                    <option value="五">星期五</option>
+                    <option value="六">星期六</option>
+                    <option value="日">星期日</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="period">停留時段</label
+                  ><select id="period">
+                    <option value="">全部時間</option>
+                    <option value="morning">早上（06:00～11:59）</option>
+                    <option value="afternoon">下午（12:00～16:59）</option>
+                    <option value="evening">傍晚（17:00～19:59）</option>
+                    <option value="night">晚上（20:00～23:59）</option>
+                    <option value="dawn">凌晨（00:00～05:59）</option>
+                  </select>
+                </div>
+                <div class="field">
+                  <label for="sortOrder">結果排序</label
+                  ><select id="sortOrder">
+                    <option value="asc">時間由早到晚</option>
+                    <option value="desc">時間由晚到早</option>
+                  </select>
+                </div>
+              </div>
+            </details>
+            <div class="button-row">
+              <button id="searchButton" class="primary" type="submit" disabled>
+                資料載入中…</button
+              ><button id="resetButton" class="text-button" type="button">
+                清除篩選條件
+              </button>
+            </div>
+          </form>
+          <section
+            id="recentSection"
+            class="recent-section"
+            aria-labelledby="recentHeading"
+            hidden
+          >
+            <div class="section-line">
+              <h3 id="recentHeading">最近搜尋</h3>
+              <button
+                id="clearRecentButton"
+                class="text-button small"
+                type="button"
+              >
+                清除紀錄
+              </button>
+            </div>
+            <div id="recentSearches" class="recent-searches"></div>
+          </section>
+          <div class="day-notice">
+            <span class="notice-symbol" aria-hidden="true">i</span>
+            <div>
+              <strong>垃圾日、回收日分開看</strong>
+              <p>資源回收日不等於一般垃圾日。未提供的星期不會推算。</p>
+            </div>
+          </div>
+        </aside>
+        <section class="results-panel" aria-labelledby="resultsHeading">
+          <div class="results-topline">
+            <div>
+              <p class="eyebrow">找到適合你的停靠站</p>
+              <h2 id="resultsHeading">停靠資訊</h2>
+            </div>
+            <div class="view-switch" aria-label="結果顯示模式">
+              <button id="viewAllButton" type="button" aria-pressed="true">
+                搜尋結果</button
+              ><button id="viewSavedButton" type="button" aria-pressed="false">
+                我的收藏 <span id="favoriteCount">0</span>
+              </button>
+            </div>
+          </div>
+          <div class="today-bar">
+            <div>
+              <span class="today-icon" aria-hidden="true">日</span
+              ><span
+                >今天想倒垃圾？<small id="todayLabel"
+                  >依台灣時間查詢</small
+                ></span
+              >
+            </div>
+            <button id="todayButton" type="button" disabled>
+              查看本區已知站點 <span aria-hidden="true">↗</span>
+            </button>
+          </div>
+          <p id="filterNotice" class="filter-notice" aria-live="polite"></p>
+          <div class="results-summary">
+            <p id="resultStatus" role="status">載入完成後即可搜尋。</p>
+            <span id="activeContext" class="context-label"></span>
+          </div>
+          <div id="results" aria-busy="true"></div>
+          <button id="moreButton" type="button" class="load-more" hidden>
+            顯示更多
+          </button>
+          <div class="data-health">
+            <p id="dataStatus" role="status">正在讀取停靠資訊…</p>
+            <button id="retryButton" type="button" class="text-button" hidden>
+              重試載入失敗資料
+            </button>
+            <details id="dataDetails">
+              <summary>資料載入詳情</summary>
+              <p id="dataDetailText"></p>
+            </details>
+          </div>
+        </section>
       </div>
-    </form>
-
-    <div class="notice">
-      「資源回收日」不一定等於「一般垃圾清運日」。
-      大部分原始 CSV 只有回收日欄位；選擇「一般垃圾清運日」時，
-      僅會搜尋有明確提供該欄位的紀錄。
-    </div>
-
-    <p id="dataStatus" class="status" role="status">正在讀取 CSV 資料...</p>
-    <p id="filterNotice" class="hint warning" aria-live="polite"></p>
-
-    <h2 class="results-heading">搜尋結果</h2>
-    <p id="resultStatus" aria-live="polite">載入完成後即可搜尋。</p>
-    <div id="results"></div>
-    <button id="moreButton" type="button" class="secondary" hidden>顯示更多</button>
-
-    <p><a href="official-day-matcher.html">官方清運日批次核對</a> · <a href="route-organizer.html">路線盤點</a> · <a href="garbage-day-review.html">人工核實</a></p>
-    <p class="footer-note">
-      資料來源：高雄市政府環境保護局及部分環境部路線整理資料。
-      本網站提供資料集的表定停靠時間，非即時垃圾車位置。
-      部分行政區資料尚未完整，實際清運資訊請以主管機關公告為準。
-    </p>
-  </main>
-
-  <script src="js/route-files.js"></script>
-  <script src="js/data-core.js"></script>
-  <script src="js/search-app.js"></script>
-</body>
+      <footer class="site-footer">
+        <div>
+          <strong>高雄市垃圾車查詢系統</strong>
+          <p>
+            資料來源：高雄市政府環境保護局及部分環境部路線整理資料。<br />本站提供表定停靠時間，實際清運請以主管機關公告為準。
+          </p>
+          <p>收藏與最近搜尋只保存在此瀏覽器，清除網站資料後會移除。</p>
+        </div>
+        <details class="admin-links">
+          <summary>資料管理工具</summary>
+          <nav aria-label="資料管理">
+            <a href="official-day-matcher.html">官方清運日批次核對</a
+            ><a href="route-organizer.html">路線盤點</a
+            ><a href="garbage-day-review.html">人工核實</a>
+          </nav>
+        </details>
+      </footer>
+    </main>
+    <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <dialog id="copyDialog" aria-labelledby="copyHeading">
+      <h2 id="copyHeading">複製停靠資訊</h2>
+      <p>瀏覽器未允許自動複製，請長按或選取下方文字複製。</p>
+      <label class="sr-only" for="copyText">停靠資訊文字</label
+      ><textarea id="copyText" readonly rows="6"></textarea>
+      <form method="dialog"><button class="primary">完成</button></form>
+    </dialog>
+    <noscript
+      ><p class="noscript">
+        請啟用 JavaScript，才能載入 CSV 並搜尋停靠資訊。
+      </p></noscript
+    >
+  </body>
 </html>
