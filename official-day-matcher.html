@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>官方一般垃圾清運日批次比對</title>
+<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+<script src="js/route-files.js"></script><script src="js/data-core.js"></script>
+<style>body{font:16px/1.7 system-ui,sans-serif;color:#20352b;background:#f5f8f5;margin:0}main{max-width:960px;margin:auto;padding:32px 20px}section{background:white;padding:24px;border-radius:12px;margin:20px 0}button,input{font:inherit;margin:8px 12px 8px 0}button{padding:8px 16px;cursor:pointer}pre{white-space:pre-wrap}table{border-collapse:collapse;width:100%}th,td{text-align:left;border-bottom:1px solid #ccc;padding:8px}a{color:#176b41}</style>
+</head><body><main>
+<a href="index.html">返回查詢</a> · <a href="route-organizer.html">路線盤點</a> · <a href="garbage-day-review.html">人工核實</a>
+<h1>官方一般垃圾清運日批次比對</h1>
+<p>五欄完整相同才產生新增候選：來源檔案、責任區、車次、停留地點、完整停留時間。工具不會改寫網站資料。</p>
+<section><h2>準備官方資料 CSV</h2>
+<p>必要欄位：<code>來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源</code>。可以保留官方路線序號、查閱日期等附加欄位。只轉錄官方「一般垃圾」欄位，不使用資源回收日。</p>
+<p>官方未提供車次時請留空。官方路線名稱的數字不等於 CSV 車次。到點時間與完整時段視為不同資料；請勿為了通過比對改填官方未提供的時間。</p>
+<label for="official">官方資料 CSV</label><input id="official" type="file" accept=".csv,text/csv">
+<button id="run">開始比對</button><p id="status" role="status">選擇檔案後開始。會從網站載入全部 39 份路線 CSV 及現有日期對照表。</p>
+</section>
+<section><h2>比對結果</h2><pre id="summary"></pre>
+<button id="candidates" disabled>下載新增候選</button><button id="review" disabled>下載人工審核報告</button><button id="proposed" disabled>下載完整提案對照表</button>
+<p>下載後請核對證據、檢查差異並透過 Pull Request 更新。完整提案保留既有規則；有既有日期衝突或資料載入失敗時停止匯出。</p>
+<table><thead><tr><th>狀態</th><th>官方地點與時間</th><th>CSV 候選（車次｜時間｜地點）</th></tr></thead><tbody id="rows"></tbody></table>
+</section></main>
+<script src="js/official-day-matcher.js"></script>
+</body></html>

@@ -1,0 +1,11 @@
+{
+  "officialRows": 179,
+  "existingRules": 243,
+  "candidates": 0,
+  "review": 179,
+  "proposedRules": 243,
+  "statusCounts": {
+    "missing_identity": 167,
+    "stale_evidence": 12
+  }
+}
