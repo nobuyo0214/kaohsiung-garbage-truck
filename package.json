@@ -7,7 +7,8 @@
     "test:browser": "playwright test",
     "audit": "node scripts/data-tool.cjs audit --out reports",
     "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west",
-    "review:sanmin-west": "node scripts/review-report.cjs"
+    "review:sanmin-west": "node scripts/review-report.cjs",
+    "investigate:sanmin-west": "node scripts/evidence-report.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",

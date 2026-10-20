@@ -1,0 +1,76 @@
+[
+  {
+    "key": "kcg-csv",
+    "url": "https://data.kcg.gov.tw/File/DirectDownload/7ce09ffa-17e1-4f1a-ab72-3d55ca95b2e5",
+    "attemptedAt": "2026-10-20T17:26:49.382808+00:00",
+    "error": "HTTP Error 503: Service Unavailable"
+  },
+  {
+    "key": "kcg-metadata",
+    "url": "https://data.kcg.gov.tw/DataSet/Detail/f3bab022-ccec-4fd8-b131-ee534676724f",
+    "attemptedAt": "2026-10-20T17:26:54.672694+00:00",
+    "error": "HTTP Error 503: Service Unavailable"
+  },
+  {
+    "key": "moenv-route4-page2",
+    "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO&p=2",
+    "attemptedAt": "2026-10-20T17:27:00.251461+00:00",
+    "error": "<urlopen error Tunnel connection failed: 403 Forbidden>"
+  },
+  {
+    "key": "data-gov-metadata",
+    "url": "https://data.gov.tw/dataset/106982",
+    "method": "web_reader",
+    "checkedDateTaipei": "2026-10-21",
+    "status": "metadata_read",
+    "officialRouteUpdatedAt": null,
+    "metadataUpdatedAt": "2025-06-30 14:52",
+    "fields": [
+      "Seq",
+      "責任區",
+      "車次",
+      "回收日",
+      "停留時間",
+      "停留地點",
+      "行政區",
+      "村里",
+      "經度",
+      "緯度"
+    ],
+    "note": "僅查核資料集欄位與實際資源連結；未取得新版CSV或JSON本文，不能據此確認任何站點的一般垃圾日"
+  },
+  {
+    "key": "kcg-json",
+    "url": "https://openapi.kcg.gov.tw/Api/Service/Get/7ce09ffa-17e1-4f1a-ab72-3d55ca95b2e5",
+    "discoveredFrom": "https://data.gov.tw/dataset/106982",
+    "method": "web_reader",
+    "checkedDateTaipei": "2026-10-21",
+    "status": "timeout_then_not_accessible",
+    "note": "沒有取得JSON本文，不宣稱已檢查該API實際紀錄"
+  },
+  {
+    "key": "kcg-gps",
+    "url": "https://kepbgps.kcg.gov.tw/",
+    "discoveredFrom": "https://ksemd.ksepb.kcg.gov.tw/StaticPage/waste-collection",
+    "method": "web_reader",
+    "checkedDateTaipei": "2026-10-21",
+    "status": "timeout",
+    "note": "官方推薦查詢入口已核對，但此環境未取得查詢內容或公開API規格"
+  },
+  {
+    "key": "kcg-waste-guide",
+    "url": "https://ksemd.ksepb.kcg.gov.tw/StaticPage/waste-collection",
+    "method": "web_reader",
+    "checkedDateTaipei": "2026-10-21",
+    "status": "content_read",
+    "note": "內文明確指向清潔隊與GPS查詢平台；本頁沒有E80720023與CSV責任區四、車次3的對照或各站離站時間"
+  },
+  {
+    "key": "kcg-spring-schedule",
+    "url": "https://ksepb.kcg.gov.tw/cleanup/springfestival/3c8d7302-5c7b-42e1-957b-809407386f44",
+    "method": "web_reader",
+    "checkedDateTaipei": "2026-10-21",
+    "status": "content_read",
+    "note": "特定春節日期異動，不能作為全年一般垃圾星期或CSV車次對照證據"
+  }
+]

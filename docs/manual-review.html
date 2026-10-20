@@ -1,8 +1,21 @@
 <!doctype html>
 <!-- Generated from manual-review.md with marked 16.4.1; see docs/README.md. -->
-<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>人工審核操作教學</title><link rel="stylesheet" href="../css/official-day-matcher.css"></head><body><main><nav><a href="../official-day-matcher.html">返回人工審核工作台</a> · <a href="../index.html">返回查詢</a></nav><section><h1>三民西區 179 筆：人工審核操作教學</h1>
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>人工審核教學與官方證據調查</title><link rel="stylesheet" href="../css/official-day-matcher.css"></head><body><main><nav><a href="../official-day-matcher.html">返回人工審核工作台</a> · <a href="../index.html">返回查詢</a></nav><section><h1>三民西區 179 筆：人工審核操作教學</h1>
 <p>本次以 <code>main</code> 的 <code>9fcc27e</code> 為基礎，參考 PR #2 的純函式審核核心重新整合介面，沒有還原整個被撤回的 PR，也沒有修改 Actions。使用者上傳檔名是 <code>sanmin-west.csv</code>，內容不是含 <code>狀態</code> 的 review 報告，而是與 <code>data/official/sanmin-west.csv</code> 完全相同的 179 筆官方轉錄。兩者 SHA-256：</p>
 <p><code>c52a79e021cef5a21c067904b3b0435965e42ba68343a0a93a89fb027f82c351</code></p>
+<h2>新增：恢復4筆進度與整條路線批次審核</h2>
+<ol>
+<li>選「匯入進度備份」，載入你的 <code>official-review-progress.json</code>。原版本3直接相容，不需要轉檔或重新接受4筆。看到「已恢復備份」及「已接受4、待處理175」，本次日期確認仍為0；正式243條規則另外保留。不要按載入新工作覆蓋正在處理的進度。</li>
+<li>展開「整條官方路線比較與批次接受候選」，選擇路線與責任區。三民西區4共69筆，表格保留#102等中間站，依官方清運序排序；CSV Seq是另一個來源的序號。連續順序只方便找差異，不能當作車次或日期證據。</li>
+<li>同地點、同到點的唯一候選會優先供勾選；時間不同／相似地點不能批次處理，按「逐筆查看」另查。已接受、已拒絕、本次已確認日期、來源變更、資料衝突及12筆stale都不批次覆蓋。</li>
+<li>按「勾選本路線可批次處理候選」，或逐列勾選。恢復目前4筆後，三民西區4另有13筆可選；三民西區1有1筆、三民西區6有49筆。這些大多已有既有日期規則，不代表新取得官方班次證據，也不需要全部接受才算完成調查。</li>
+<li>填一次至少10字的共同理由，按「預覽這次勾選」。核對名單後，勾選「這次只接受建議，不新增日期」，再按「批次接受候選建議（不新增日期）」。改動勾選或理由後須重新預覽。一次只能處理同檔案、行政區、責任區與官方路線，不把不同車次視為同一班。</li>
+<li>套用後仍可逐筆拒絕、改為待查或記錄不同理由。每筆都保存共同理由、原始資料指紋與批次ID；沒有日期確認或新星期產生。沒有充分證據，日期待查仍是179。</li>
+<li>在「批次歷程」選擇一批，按「撤銷選取批次」。未另作修改的候選還原成批次前的完整狀態與理由；批次後做過的逐筆修改保留，畫面會顯示還原／保留筆數。批次撤銷不影響另有充分證據的個別日期確認，也不修改正式243條規則。</li>
+<li>下載進度備份後可換裝置匯入，批次歷程及撤銷功能一併恢復。舊版v3檔沒有批次歷程時視為空白歷程；已接受的4筆依舊保留。使用舊版工作台重新存檔可能忽略新歷程，請使用本次新版介面與最新備份。</li>
+</ol>
+<p>統計分成兩條線：候選狀態以官方紀錄計，接受／全數拒絕／待處理互斥；至少一組建議被接受即計為已接受，不表示其他建議都處理完。畫面另列每組候選的數量。本次日期確認與日期仍待查是另一項統計，接受建議不會減少日期待查筆數。</p>
+<p>官方調查結果見 <a href="official-evidence-investigation.html">本次證據調查</a>：四筆一般垃圾星期雖在官方頁面可見，仍缺CSV車次、離站時間與有效版本，新增維持0。</p>
 <h2>先理解三種不同結果</h2>
 <div class="comparison"><table>
 <thead>
@@ -107,7 +120,7 @@
 </thead>
 <tbody><tr>
 <td>來源檔案、責任區、車次、停留地點、停留時間</td>
-<td>官方證明的完整五欄；必須唯一對應原始 CSV，時間必須包含完整時段</td>
+<td>官方證明的完整五欄；必須唯一對應原始 CSV，時間需與CSV完整欄位一致；CSV為時段時須含起訖</td>
 </tr>
 <tr>
 <td>一般垃圾日</td>

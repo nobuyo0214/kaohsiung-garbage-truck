@@ -56,6 +56,10 @@
           )
         )
           reasons.push("到點一致的候選與既有日期不同；保留舊規則，不覆蓋");
+        if (/責任區關聯沿用/.test(e.official["備註"] || ""))
+          reasons.push(
+            "轉錄中的責任區沿用既有關聯，官方頁面未明列CSV責任區，仍須官方對照文件",
+          );
         if (!D.clean(e.official["車次"]))
           reasons.push("官方沒有明確 CSV 車次，路線名稱數字不能當作車次");
         if (stale) reasons.push("來源標為舊快取，須取得可查證的新官方證據");
