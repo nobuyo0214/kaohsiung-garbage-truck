@@ -256,8 +256,6 @@
       if (!validFiles.has(clean(o["來源檔案"]))) status = "unknown_file";
       else if (!officialURL(o["官方來源"])) status = "invalid_source";
       else if (clean(o["證據狀態"]) === "stale") status = "stale_evidence";
-      else if (clean(o["證據狀態"]) && clean(o["證據狀態"]) !== "verified")
-        status = "unverified_evidence";
       else if (!normalizeDays(o["一般垃圾日"])) status = "missing_garbage_days";
       else if (
         !clean(o["責任區"]) ||

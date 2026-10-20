@@ -6,16 +6,8 @@
     "test": "node --test test/*.test.cjs",
     "test:browser": "playwright test",
     "audit": "node scripts/data-tool.cjs audit --out reports",
-    "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west",
-    "import:official": "node scripts/official-import.cjs build --out reports/expansion",
-    "report:expansion": "node scripts/expansion-report.cjs"
+    "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west"
   },
-  "devDependencies": {
-    "@playwright/test": "1.56.1",
-    "cheerio": "1.1.2",
-    "papaparse": "5.5.3"
-  },
-  "engines": {
-    "node": ">=22"
-  }
+  "devDependencies": {"@playwright/test": "1.56.1", "papaparse": "5.5.3"},
+  "engines": {"node": ">=22"}
 }
