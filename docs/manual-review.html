@@ -1,0 +1,226 @@
+<!doctype html>
+<!-- Generated from manual-review.md with marked 16.4.1; see docs/README.md. -->
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>人工審核操作教學</title><link rel="stylesheet" href="../css/official-day-matcher.css"></head><body><main><nav><a href="../official-day-matcher.html">返回人工審核工作台</a> · <a href="../index.html">返回查詢</a></nav><section><h1>三民西區 179 筆：人工審核操作教學</h1>
+<p>本次以 <code>main</code> 的 <code>9fcc27e</code> 為基礎，參考 PR #2 的純函式審核核心重新整合介面，沒有還原整個被撤回的 PR，也沒有修改 Actions。使用者上傳檔名是 <code>sanmin-west.csv</code>，內容不是含 <code>狀態</code> 的 review 報告，而是與 <code>data/official/sanmin-west.csv</code> 完全相同的 179 筆官方轉錄。兩者 SHA-256：</p>
+<p><code>c52a79e021cef5a21c067904b3b0435965e42ba68343a0a93a89fb027f82c351</code></p>
+<h2>先理解三種不同結果</h2>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>畫面用語</th>
+<th>代表什麼</th>
+<th>能否新增日期</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>系統建議的候選</td>
+<td>同檔案、行政區及責任區內，依地點、到點時間提供查找線索</td>
+<td>不能</td>
+</tr>
+<tr>
+<td>已接受候選建議</td>
+<td>人工認為值得保留；保存理由，仍可能缺車次或完整時段證據</td>
+<td>不能</td>
+</tr>
+<tr>
+<td>已人工確認日期</td>
+<td>已匯入完整官方證據並人工確認，通過五欄唯一識別、一般垃圾星期與衝突檢查</td>
+<td>可加入「提案」，仍要經 PR 審查</td>
+</tr>
+</tbody></table></div>
+<p>本次自動確認 <strong>0</strong> 筆、新增充分證據日期 <strong>0</strong> 條，全部 <strong>179</strong> 筆繼續保留日期待查。現有 <strong>243</strong> 條日期規則和 <strong>39</strong> 份原始路線 CSV 完全不變。63 筆已有規則的候選不算本次重新核實成功。</p>
+<h2>第一次使用</h2>
+<ol>
+<li>開啟網站的 <code>official-day-matcher.html</code>（「官方一般垃圾清運日批次比對」入口），按「載入三民西區 179 筆」。不需要整理或修改 CSV，也不用先上傳檔案。</li>
+<li>等待「比對完成」。工具必須成功讀取全部 39 份路線及現有日期表；讀取失敗會停止，不產生不完整的替換表。</li>
+<li>畫面會先顯示 #99。可以用「優先順序」選第一項，只看最值得先查的 4 筆；也可以選行政區、官方路線，或用「選擇紀錄」直接跳到任一筆。所有 179 筆都可存取，不再只顯示前 100 筆。</li>
+<li>中間的表格左邊是官方轉錄，右邊是 CSV 候選。橘色背景表示字面不同；「未提供」代表官方沒有給這個欄位，不能照右邊抄填。一般垃圾星期右邊只顯示既有已確認日期，不顯示資源回收日作為垃圾日。</li>
+<li>有多個候選時，使用「CSV 候選」選單逐一比較。到點時間差的正負值為「官方到點減 CSV 起點」；例如 <code>-2</code> 表示官方比 CSV 早 2 分鐘。<code>time_extent_mismatch</code> 代表到點與完整時段不同，不能認定已精確配對。</li>
+<li>按「開啟官方路線頁」閱讀官方內容。工具不會僅因網址是政府網域就聲稱已查證；官方網頁可能暫時無法連線或只提供舊快取。無法取得時，繼續保留待查。</li>
+<li>在「核對紀錄／拒絕原因」填至少 10 字。例如「此候選的地點與到點一致，但仍缺官方車次及離站時間證據」。選「接受候選建議（不新增日期）」。若候選確定不適合，寫理由再選「拒絕此候選」。拒絕只影響該候選，其他候選與原始資料都保留；可選「保留待查／記錄原因」重新處理。</li>
+<li>用「下一筆」繼續。若此筆沒有候選，可填理由並按「保留待查／記錄原因」，也能保存查找過程；不能為了完成進度而新增站點。候選處理進度與日期確認進度分開計算；處理完候選不代表日期已查證。</li>
+</ol>
+<h2>最容易先查的 4 筆</h2>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>紀錄</th>
+<th>官方地點</th>
+<th>官方到點</th>
+<th>CSV 候選責任區／車次</th>
+<th>CSV 完整時段</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#99</td>
+<td>更新街與康平街口</td>
+<td>20:50</td>
+<td>四／3</td>
+<td>20:50-20:52</td>
+</tr>
+<tr>
+<td>#100</td>
+<td>更新街與通化街口</td>
+<td>20:52</td>
+<td>四／3</td>
+<td>20:52-20:54</td>
+</tr>
+<tr>
+<td>#101</td>
+<td>中華二路與中華二路12巷口</td>
+<td>20:54</td>
+<td>四／3</td>
+<td>20:54-20:57</td>
+</tr>
+<tr>
+<td>#103</td>
+<td>哈爾濱街與泰康街口</td>
+<td>21:05</td>
+<td>四／3</td>
+<td>21:05-21:08</td>
+</tr>
+</tbody></table></div>
+<p>四筆都出自既有官方路線「三民西區4」。<strong>官方路線4不是 CSV 車次4，右表的車次3也只是 CSV 候選。</strong> 還要取得官方明確證明 CSV 車次及完整時段的資料，才能確認日期。相同地點的另一筆「更新街與康平街口」官方到點是 16:23，CSV 同地點卻只有車次3的20:50-20:52，這種不同時段不能視為同班。</p>
+<h2>保存、離開及下次繼續</h2>
+<ul>
+<li>每次接受、拒絕、改為待查、確認日期、撤回日期及匯入補充證據後，進度會自動保存在目前瀏覽器。請看「進度已保存」提示。</li>
+<li>下次開啟同一網址，按「恢復本機進度」，不要另開一份新工作。剛載入新資料時不會立即覆寫舊進度，開始操作後才會保存新工作。</li>
+<li>「下載進度備份」會保存原始轉錄、補充證據、候選處理紀錄及日期確認。建議每次工作結束都下載；換裝置時用「匯入進度備份」恢復。</li>
+<li>本機儲存只屬於同一個瀏覽器、同一網站來源；無痕模式、清除網站資料、換網址或換裝置可能無法取得。保存失敗會提示，請下載 JSON 備份。工具沒有雲端帳號或付費伺服器。</li>
+<li>匯入進度時會重新讀取網站最新的 39 份路線和日期表。原始站點已變更的候選會要求重審；不會沿用舊日期確認。若已有日期確認無法通過最新證據檢查，整份恢復會停止；先保留備份供維護者檢查，不可移除安全檢查硬匯入。</li>
+<li>篩選器與目前瀏覽位置不在備份中；審核結果會保存，恢復後從排序最前的紀錄開始。</li>
+</ul>
+<h2>真的取得完整官方證據後</h2>
+<p>一般使用者可以先完成候選審核，不必操作這個進階步驟。若只有目前的到點資料，停在候選階段即可。</p>
+<ol>
+<li><p>選定紀錄及候選，展開「已取得完整官方證據，再確認日期」。</p>
+</li>
+<li><p>按「下載本筆補充證據空白表」。它含長字串的 <code>對應來源紀錄ID</code>，請完整保留。這是原始紀錄的穩定識別，不是 CSV 車次。表中<strong>車次、地點、時間、日期、官方來源等證據欄位故意留白</strong>，避免把建議抄成已確認證據。</p>
+</li>
+<li><p>只有閱讀官方實際內容後，才能將官方明列的資料填入：</p>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>欄位</th>
+<th>填寫規則</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>來源檔案、責任區、車次、停留地點、停留時間</td>
+<td>官方證明的完整五欄；必須唯一對應原始 CSV，時間必須包含完整時段</td>
+</tr>
+<tr>
+<td>一般垃圾日</td>
+<td>官方「一般垃圾」欄位明列星期，例如 <code>一、二、四、五、六</code>，不能使用回收日或猜測</td>
+</tr>
+<tr>
+<td>官方來源</td>
+<td>實際查證的 HTTPS 政府頁面／資源網址，不能只填參考連結當作證據</td>
+</tr>
+<tr>
+<td>對應來源紀錄ID</td>
+<td>保留空白表原本的長字串，不能自行改號</td>
+</tr>
+<tr>
+<td>證據狀態</td>
+<td>人工完成查證後才填 <code>verified</code></td>
+</tr>
+<tr>
+<td>查證日期</td>
+<td>實際查證日 <code>YYYY-MM-DD</code>，不是官方更新日</td>
+</tr>
+<tr>
+<td>查證依據</td>
+<td>至少 10 字，說明官方文件／欄位如何明確證明車次、時間及一般垃圾日；建議記錄頁次、版本或文件名稱</td>
+</tr>
+<tr>
+<td>官方更新日期</td>
+<td>官方實際公布時才填，未知留白</td>
+</tr>
+<tr>
+<td>參考官方來源</td>
+<td>原快照的查找線索；不是授權新增日期的證據欄位</td>
+</tr>
+</tbody></table></div>
+</li>
+<li><p>匯入已填寫的補充 CSV。工具會累積證據，保留彼此衝突的內容，不用後一筆覆蓋前一筆。如果補充日期與原轉錄不一致、與既有規則衝突、原始五欄重複，或缺少任何證據，確認按鈕維持停用。這些問題須另行查明，不得刪掉衝突資料來通過。若新增證據使先前提案確認失效，該筆會退回待查，原確認理由與證據指紋保留於備份；不影響正式日期表。</p>
+</li>
+<li><p>比較表仍保留原官方轉錄與 CSV 候選，方便看出尚未證明的差異。核對補充來源與原始 CSV 後，在理由欄填寫本次確認依據，勾選「我已閱讀官方內容…」，再按「確認日期配對」。只有這個動作會授權加入日期提案；單純匯入 verified 證據也不會自動新增。</p>
+</li>
+<li><p>可用「撤回本筆日期確認」取消。重新接受／拒絕候選也會撤回該筆原日期確認，避免留下互相矛盾的操作。</p>
+</li>
+<li><p>按「下載完整日期提案」時會再次讀取最新正式資料、驗證來源／原始資料／證據指紋及衝突，再合併；舊規則不覆蓋、不刪除，重複日期不再新增。沒有充分證據的操作，提案仍為原 243 條。</p>
+</li>
+<li><p>將提案、審核清單、來源與理由提交新分支 PR。確認 PR 測試通過後由維護者審查合併；工具本身不會修改 GitHub。</p>
+</li>
+</ol>
+<p>網址格式、<code>verified</code> 與人工勾選是可追溯的人工聲明，<strong>不代表程式已自動下載並驗證官方內容</strong>。如果官方本來沒有 CSV 車次或完整時段，不要照 CSV 補齊；此系統應繼續保留待查。</p>
+<h2>179 筆的分析與報告</h2>
+<p>原始安全比對的主狀態是 <code>missing_identity</code> 167 筆和 <code>stale_evidence</code> 12 筆；實際上 <strong>179 筆都缺少官方 CSV 車次</strong>。12 筆因舊證據優先分類，不代表它們已經有車次。</p>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>排序群組</th>
+<th align="right">筆數</th>
+<th>仍需確認的原因</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>到點一致、沒有既有規則</td>
+<td align="right">4</td>
+<td>官方車次、離站時間與完整新證據</td>
+</tr>
+<tr>
+<td>到點一致、已有規則</td>
+<td align="right">63</td>
+<td>舊規則保留，不聲稱已重新查證</td>
+</tr>
+<tr>
+<td>同地點、時間不同</td>
+<td align="right">40</td>
+<td>確認資料版本或班次，不能因時間近就認定相同</td>
+</tr>
+<tr>
+<td>無相同地點</td>
+<td align="right">60</td>
+<td>同責任區原始資料缺站或地點文字不同，不能跨區補配</td>
+</tr>
+<tr>
+<td>舊證據待更新</td>
+<td align="right">12</td>
+<td>先取得完整新證據；到點一致也不直接確認</td>
+</tr>
+</tbody></table></div>
+<p>候選共 <strong>136 組</strong>，涵蓋 <strong>127 筆</strong>官方紀錄；另 <strong>52 筆</strong>連建議候選都沒有。「無相同地點」的 60 筆中，有 8 筆只有文字相似的查找建議，仍不視為相同站點。相同地點全部列出；不同文字的建議最多 8 組，依文字相似度與時間差排序，分數不代表官方可信度。</p>
+<p>特別缺口：官方「三民西區1」轉錄48筆，而 CSV 的三民西區責任區「一」只有1筆。47筆找不到同責任區完全相同地點。此事應另向資料來源查證；不把大寮區或其他責任區的同名站點補進來，也不修改正式停靠時間。</p>
+<p>報告在 <code>reports/sanmin-west-ranked/</code>：</p>
+<ul>
+<li><code>review-all.csv</code>：179 筆全部原始欄位、不能確認原因、優先順序、候選、原安全狀態及下一步。</li>
+<li><code>priority-first.csv</code>：最值得先查的4筆，不是可直接新增的日期。</li>
+<li><code>candidate-comparison.csv</code>：136組逐對比較，保留官方及CSV兩邊欄位、時間差、既有日期。</li>
+<li><code>garbage-days-proposed.csv</code>：本次保留243條既有規則，新增0條。</li>
+<li><code>summary.json</code>：計數與輸入／正式資料雜湊，可重跑核對。</li>
+</ul>
+<h2>官方來源與取得限制</h2>
+<p>沿用現有 <code>data/official/sanmin-west.csv</code> 的真實來源：</p>
+<ul>
+<li><a href="https://data.gov.tw/dataset/106982">高雄市政府開放資料集說明</a>：路線、時間與回收日。不能將回收日當一般垃圾日。</li>
+<li><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6851225449&ddsPageID=LINEINFO">環境部三民西區1</a>：E80720020，48筆轉錄。</li>
+<li><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO">環境部三民西區4</a> 及 <a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO&p=2">第二頁</a>：E80720023，69筆轉錄。</li>
+<li><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471148285&ddsPageID=LINEINFO">環境部三民西區6</a> 及 <a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471148285&ddsPageID=LINEINFO&p=2">第二頁</a>：E80720025，62筆轉錄，末12筆是舊快取。</li>
+</ul>
+<p>本次未取得能新證明CSV車次與完整時段的官方資料。執行環境直接連環境部路線站台受網路政策阻擋（CONNECT 403），不能宣稱已重新查證官方即時內容。原快照的「查閱日期2026-10-20」是原先讀取／搜尋觀察時間，<strong>不是官方更新日期</strong>；本次沒有把讀檔或產生報告時間改填成官方更新日。此PR優先提供可用的人工流程，未擴充三民東或岡山的日期，也未還原PR #2全部採集器。</p>
+<h2>本機重跑與測試</h2>
+<pre><code class="language-sh">npm ci --ignore-scripts
+npm run review:sanmin-west
+# 也可以直接核對上傳檔案；與預設官方快照相同時摘要雜湊會一致
+node scripts/review-report.cjs --input path/to/review.csv --out work/review
+npm test
+npx playwright install --with-deps chromium
+npm run test:browser
+# 有系統 Chromium 可改用
+PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH=/usr/bin/chromium npm run test:browser
+node scripts/serve.cjs
+</code></pre>
+<p>預覽網址為 <code>http://127.0.0.1:4173/official-day-matcher.html</code>。Pages仍是純靜態網站；不要直接用 <code>file://</code> 開啟。</p>
+</section></main></body></html>

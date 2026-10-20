@@ -6,8 +6,14 @@
     "test": "node --test test/*.test.cjs",
     "test:browser": "playwright test",
     "audit": "node scripts/data-tool.cjs audit --out reports",
-    "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west"
+    "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west",
+    "review:sanmin-west": "node scripts/review-report.cjs"
   },
-  "devDependencies": {"@playwright/test": "1.56.1", "papaparse": "5.5.3"},
-  "engines": {"node": ">=22"}
+  "devDependencies": {
+    "@playwright/test": "1.56.1",
+    "papaparse": "5.5.3"
+  },
+  "engines": {
+    "node": ">=22"
+  }
 }

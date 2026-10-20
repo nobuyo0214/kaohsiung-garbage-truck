@@ -1,0 +1,26 @@
+{
+  "officialRows": 179,
+  "existingRules": 243,
+  "strictStatusCounts": {
+    "missing_identity": 167,
+    "stale_evidence": 12
+  },
+  "groups": {
+    "優先查看・到點一致": 4,
+    "到點一致・已有規則": 63,
+    "同地點・時間不同": 40,
+    "無相同地點": 60,
+    "舊證據待更新": 12
+  },
+  "systemSuggestedPairs": 136,
+  "rowsWithSuggestions": 127,
+  "rowsWithoutSuggestions": 52,
+  "automaticConfirmedMatches": 0,
+  "newEvidenceConfirmedRules": 0,
+  "pendingDateReview": 179,
+  "inputSHA256": "c52a79e021cef5a21c067904b3b0435965e42ba68343a0a93a89fb027f82c351",
+  "matchesRepositoryOfficialSnapshot": true,
+  "routeSHA256": "6f96f8616ea64e10e3e0d6ad51aadb4d8a58d59cf2ae640ecf2834e307309be8",
+  "existingRulesSHA256": "fa2cf2dacb47fb6c3ad990c390a0e2d1840527fdadaf741ed0fc4f4751a8c432",
+  "note": "到點相同、文字相似及既有規則僅協助排序；均非本次新增日期證據。查閱日期不是官方更新日期。"
+}

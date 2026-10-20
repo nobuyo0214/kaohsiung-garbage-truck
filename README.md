@@ -3,13 +3,13 @@
 以 GitHub Pages、HTML、JavaScript、Papa Parse 5.5.3 與 CSV 提供 38 個行政區的表定路線查詢。網站不需要後端或付費伺服器；不是即時垃圾車定位服務。
 
 - `index.html`：行政區、村里、地點關鍵字、一般垃圾／資源回收星期、時段、時間排序與分頁。
-- `official-day-matcher.html`：上傳官方資料，批次比對並下載新增候選、人工審核報告及完整提案。
+- `official-day-matcher.html`：逐筆並排審核官方資料與 CSV 候選、接受／拒絕、保存／恢復進度；完整官方證據與人工確認後才產生日期提案。
 - `route-organizer.html`：產生路線盤點與對照表；讀取失敗或日期衝突時停止對照表匯出。
 - `garbage-day-review.html`：人工核實單一停靠紀錄；完整五欄必須唯一對應原始 CSV。
 
 ## 已核實的版本與資料來源
 
-本次檢查以 `main` 的 `068ed479e617baa73672b78bc02bad06c908065d` 為基準，查閱日期為 **2026-10-20（台北時間）**：
+本次人工審核改版以 `main` 的 `9fcc27e`（PR #3 撤回 PR #2 後）為基準，查閱日期為 **2026-10-20（台北時間）**：
 
 - 39 份路線 CSV、38 個行政區、13,871 筆有停留地點的紀錄。
 - `garbage-days.csv` 有 **243 條**既有日期規則：三民東區 179、三民西區 63、杉林區 1。
@@ -47,18 +47,15 @@
 
 ### 在 GitHub Pages 操作
 
-1. 從官方頁面或資料集轉錄／轉換一般垃圾資料為 UTF-8 CSV，至少具有以下表頭：
+請先閱讀 [完整人工審核操作教學](docs/manual-review.md)，包含179筆分析、四筆優先候選、每個按鈕、進度備份、補充證據格式與官方來源限制。
 
-   ```csv
-   來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源
-   ```
+1. 開啟 `official-day-matcher.html`，按「載入三民西區179筆」；其他行政區可展開上傳官方CSV。
+2. 依行政區、官方路線、優先順序篩選，逐筆比較官方與CSV候選；填理由後接受建議、拒絕或改為待查。**接受候選不會新增日期。**
+3. 操作後自動保存至本機；下次按「恢復本機進度」，換裝置則下載／匯入JSON進度備份。
+4. 取得官方明確的完整五欄及一般垃圾日後，使用該筆的補充證據空白表記錄來源、查證日期與依據，匯入並人工確認。沒有完整證據時，確認按鈕維持停用。
+5. 下載全部審核清單、系統建議候選與完整日期提案，通過測試並送PR。匯出重新讀取最新日期表及全部路線，保留既有規則、阻擋衝突；不會自動修改GitHub。
 
-   日期格式為 `一、二、四、五、六` 等明列星期。缺少證據的識別欄位留白；不得猜填。可附加 `官方路線序號`、`查閱日期`、`擷取說明` 等欄位；已知過舊的證據標示 `證據狀態=stale`。
-
-2. 開啟 `official-day-matcher.html` 上傳 CSV。工具載入全部路線及現有規則；遇到缺檔、解析錯誤或缺欄會停止匯出，避免產生不完整的替換檔。
-3. 下載 `review.csv` 核對缺車次、不同時間、無對應及日期衝突。顯示的 CSV 候選只是供審核參考，不是已確認配對。
-4. 檢查 `candidates.csv`，核對官方欄位與版本後才將完整提案作為 `garbage-days.csv` 的更新內容。
-5. 建立分支、執行測試並送 Pull Request，經人工審查後合併；工具不會自動修改 GitHub。
+本次179筆分組：到點一致且無既有規則4筆、到點一致且已有規則63筆、同地點時間不同40筆、無相同地點60筆、舊證據12筆。共136組系統建議，**充分證據自動確認0筆、新增日期0條，179筆繼續保留待查**。12筆舊證據也都缺少車次。逐筆原因與候選見 [完整報告](reports/sanmin-west-ranked/review-all.csv)、[優先4筆](reports/sanmin-west-ranked/priority-first.csv)、[雙方差異](reports/sanmin-west-ranked/candidate-comparison.csv) 和 [計數與雜湊](reports/sanmin-west-ranked/summary.json)。
 
 ### 本機批次處理
 
@@ -68,6 +65,7 @@
 npm ci --ignore-scripts
 npm run audit
 npm run reconcile:sanmin-west
+npm run review:sanmin-west # 逐筆原因、排序與候選比較報告
 # 其他行政區：同樣的表頭、同樣的安全規則
 node scripts/data-tool.cjs reconcile --official path/to/official.csv --out work/review
 # 本機預覽
@@ -124,8 +122,13 @@ GitHub Actions 執行資料測試、稽核、快照比對與 Chromium 瀏覽器�
 
 - `js/route-files.js`：唯一的 39 份檔案清單，網站、盤點與 CLI 共用。
 - `js/data-core.js`：不依賴 DOM 的正規化、五欄識別、驗證、日期套用、搜尋、批次比對與保留舊規則合併函式；同時支援瀏覽器與 Node.js。
-- `js/official-day-matcher.js`：檔案載入、畫面與下載。
+- `js/review-core.js`：參考PR #2重新整合的候選查找、完整證據驗證、人工日期決策及提案重新驗證；不參與正式搜尋的模糊配對。
+- `js/review-triage.js`：原因與優先排序、候選接受／拒絕、版本3進度格式及報告；候選紀錄與日期確認分離。
+- `js/official-day-matcher.js`：檔案載入、逐筆畫面、localStorage／JSON進度保存及下載。
+- `scripts/review-report.cjs`：與介面共用分析核心，重跑179筆完整比較及雜湊摘要。
 - `scripts/data-tool.cjs`：CSV 解析、稽核與報告；解析錯誤立即失敗。
 - `data/official/`：有來源的官方資料轉錄；`reports/`：可重跑的結果。
 
 新增行政區資料轉換器時，先保留官方原始欄位與來源，再轉成共用表頭；缺少明確關係時輸出待核實資料。不要在搜尋頁加入每個行政區各自的模糊比對特例。新增來源檔案時更新共用清單、行政區選項與測試基準；現有 38 區應繼續通過回歸測試。
+
+人工審核回歸測試另涵蓋179筆分組、候選與正式日期隔離、舊證據／衝突阻擋、進度恢復與變更後重審、逐候選拒絕、最新正式檔讀取失敗停止匯出，以及手機版與純文字安全呈現。Actions保留原 `ubuntu-24.04` 設定。

@@ -1,25 +1,186 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>官方一般垃圾清運日批次比對</title>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-<script src="js/route-files.js"></script><script src="js/data-core.js"></script>
-<style>body{font:16px/1.7 system-ui,sans-serif;color:#20352b;background:#f5f8f5;margin:0}main{max-width:960px;margin:auto;padding:32px 20px}section{background:white;padding:24px;border-radius:12px;margin:20px 0}button,input{font:inherit;margin:8px 12px 8px 0}button{padding:8px 16px;cursor:pointer}pre{white-space:pre-wrap}table{border-collapse:collapse;width:100%}th,td{text-align:left;border-bottom:1px solid #ccc;padding:8px}a{color:#176b41}</style>
-</head><body><main>
-<a href="index.html">返回查詢</a> · <a href="route-organizer.html">路線盤點</a> · <a href="garbage-day-review.html">人工核實</a>
-<h1>官方一般垃圾清運日批次比對</h1>
-<p>五欄完整相同才產生新增候選：來源檔案、責任區、車次、停留地點、完整停留時間。工具不會改寫網站資料。</p>
-<section><h2>準備官方資料 CSV</h2>
-<p>必要欄位：<code>來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源</code>。可以保留官方路線序號、查閱日期等附加欄位。只轉錄官方「一般垃圾」欄位，不使用資源回收日。</p>
-<p>官方未提供車次時請留空。官方路線名稱的數字不等於 CSV 車次。到點時間與完整時段視為不同資料；請勿為了通過比對改填官方未提供的時間。</p>
-<label for="official">官方資料 CSV</label><input id="official" type="file" accept=".csv,text/csv">
-<button id="run">開始比對</button><p id="status" role="status">選擇檔案後開始。會從網站載入全部 39 份路線 CSV 及現有日期對照表。</p>
-</section>
-<section><h2>比對結果</h2><pre id="summary"></pre>
-<button id="candidates" disabled>下載新增候選</button><button id="review" disabled>下載人工審核報告</button><button id="proposed" disabled>下載完整提案對照表</button>
-<p>下載後請核對證據、檢查差異並透過 Pull Request 更新。完整提案保留既有規則；有既有日期衝突或資料載入失敗時停止匯出。</p>
-<table><thead><tr><th>狀態</th><th>官方地點與時間</th><th>CSV 候選（車次｜時間｜地點）</th></tr></thead><tbody id="rows"></tbody></table>
-</section></main>
-<script src="js/official-day-matcher.js"></script>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>一般垃圾日人工審核工作台</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+    <script src="js/route-files.js"></script>
+    <script src="js/data-core.js"></script>
+    <script src="js/review-core.js"></script>
+    <script src="js/review-triage.js"></script>
+    <link rel="stylesheet" href="css/official-day-matcher.css" />
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html">返回垃圾車查詢</a> ·
+        <a href="docs/manual-review.html">完整操作教學</a>
+      </nav>
+      <h1>一般垃圾日人工審核工作台</h1>
+      <p>
+        先找可能對應的 CSV 站點，再補齊官方證據。<strong
+          >接受候選只是保存建議，不會新增清運日。</strong
+        >
+      </p>
+      <section aria-labelledby="start-title">
+        <h2 id="start-title">1. 開始或接續審核</h2>
+        <button id="load-default" class="primary">載入三民西區 179 筆</button>
+        <button id="restore">恢復本機進度</button
+        ><button id="backup" disabled>下載進度備份</button>
+        <label class="file"
+          >匯入進度備份
+          <input id="session" type="file" accept=".json,application/json"
+        /></label>
+        <details>
+          <summary>改用其他官方資料 CSV</summary>
+          <p>
+            保留原始欄位與來源，不填入猜測的車次或離站時間。可匯入其他行政區，工具仍讀取全部
+            39 份路線。
+          </p>
+          <label for="official">官方資料 CSV</label
+          ><input id="official" type="file" accept=".csv,text/csv" /><button
+            id="run"
+          >
+            開始比對
+          </button>
+        </details>
+        <p id="status" role="status" aria-live="polite">
+          請載入資料，或恢復上次審核進度。
+        </p>
+        <p id="save-status" role="status"></p>
+        <details>
+          <summary>資料筆數與比對摘要</summary>
+          <pre id="summary"></pre>
+        </details>
+      </section>
+      <section id="workspace" hidden aria-labelledby="review-title">
+        <h2 id="review-title">2. 逐筆比較候選</h2>
+        <div class="filters">
+          <label
+            >行政區
+            <select id="district"></select></label
+          ><label
+            >官方路線
+            <select id="route"></select
+          ></label>
+          <label
+            >優先順序
+            <select id="priority">
+              <option value="">全部</option>
+              <option value="1">優先查看：到點一致、沒有既有規則</option>
+              <option value="2">到點一致、已有規則</option>
+              <option value="3">同地點、時間不同</option>
+              <option value="4">無相同地點</option>
+              <option value="5">舊證據待更新</option>
+            </select></label
+          >
+          <label
+            >候選審核
+            <select id="state">
+              <option value="">全部</option>
+              <option value="pending">尚有未處理候選／無候選</option>
+              <option value="done">所有候選已處理（日期仍需查證）</option>
+            </select></label
+          >
+        </div>
+        <p id="progress"></p>
+        <label for="record">選擇紀錄</label
+        ><select id="record"></select>
+        <div>
+          <button id="previous">上一筆</button><button id="next">下一筆</button>
+        </div>
+        <article id="detail" tabindex="-1">
+          <h3 id="record-title"></h3>
+          <p id="reasons" class="notice"></p>
+          <label for="candidate">CSV 候選（系統建議，請查證）</label
+          ><select id="candidate"></select>
+          <div class="comparison">
+            <table>
+              <caption>
+                官方資料與 CSV 候選並排比較
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">欄位</th>
+                  <th scope="col">官方轉錄</th>
+                  <th scope="col">CSV 候選</th>
+                </tr>
+              </thead>
+              <tbody id="comparison"></tbody>
+            </table>
+          </div>
+          <p id="difference"></p>
+          <p id="existing"></p>
+          <p id="source"></p>
+          <p id="candidate-state" role="status"></p>
+          <label for="reason">核對紀錄／拒絕原因（至少 10 字）</label
+          ><textarea
+            id="reason"
+            rows="3"
+            placeholder="例如：仍缺少官方車次及離站時間，先保留此候選供後續查證。"
+          ></textarea>
+          <div>
+            <button id="accept">接受候選建議（不新增日期）</button
+            ><button id="reject">拒絕此候選</button
+            ><button id="reopen">保留待查／記錄原因</button>
+          </div>
+          <p id="action-status" role="status"></p>
+          <details id="evidence-panel">
+            <summary>3. 已取得完整官方證據，再確認日期</summary>
+            <p>
+              只有官方明列五欄、一般垃圾星期、查證紀錄，且沒有日期衝突時才能確認。<strong
+                >不可以把 CSV 車次或離站時間抄進官方證據。</strong
+              >舊快取、相似地點、接近時間都不足以確認。
+            </p>
+            <p>
+              補充 CSV
+              必須含原本七個欄位，以及「對應來源紀錄ID」「證據狀態」（verified）「查證日期」（YYYY-MM-DD）「查證依據」（至少
+              10 字）。官方更新日期未知請留白；查證日期是實際核對日期。
+            </p>
+            <button id="proof-template">下載本筆補充證據空白表</button>
+            <label for="evidence">匯入已核對的官方補充 CSV</label
+            ><input id="evidence" type="file" accept=".csv,text/csv" />
+            <p id="evidence-status"></p>
+            <div id="proofs"></div>
+            <label
+              ><input
+                id="attest"
+                type="checkbox"
+              />我已閱讀官方內容，確認完整五欄及一般垃圾日，並填寫核對依據</label
+            >
+            <button id="confirm-date" disabled>確認日期配對</button
+            ><button id="undo-date" disabled>撤回本筆日期確認</button>
+            <p id="date-state" role="status"></p>
+          </details>
+        </article>
+      </section>
+      <section>
+        <h2>4. 匯出，交由 Pull Request 審查</h2>
+        <button id="candidates" disabled>下載系統建議候選</button
+        ><button id="review" disabled>下載全部審核清單</button
+        ><button id="proposed" disabled>下載完整日期提案</button>
+        <p>
+          完整日期提案保留全部既有規則，只納入已有充分證據且人工確認的新增日期。未確認的問題會留在審核清單及進度備份。工具不會修改網站或
+          GitHub。
+        </p>
+        <details>
+          <summary>原始安全比對狀態（完整紀錄）</summary>
+          <div class="comparison">
+            <table>
+              <thead>
+                <tr>
+                  <th>狀態</th>
+                  <th>官方地點與時間</th>
+                  <th>CSV 候選</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+        </details>
+      </section>
+    </main>
+    <script src="js/official-day-matcher.js"></script>
+  </body>
+</html>
