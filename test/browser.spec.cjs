@@ -80,6 +80,7 @@ test("official batch UI exports review for real arrival-only snapshot and preser
   page,
 }) => {
   await page.goto("/official-day-matcher.html");
+  await page.getByText("改用其他官方資料 CSV", { exact: true }).click();
   await page.setInputFiles("#official", "data/official/sanmin-west.csv");
   await page.click("#run");
   await expect(page.locator("#status")).toContainText("比對完成");
