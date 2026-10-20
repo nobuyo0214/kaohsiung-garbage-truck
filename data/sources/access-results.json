@@ -1,0 +1,24 @@
+[
+  {
+    "source": "kcg-east-csv",
+    "url": "https://data.kcg.gov.tw/File/DirectDownload/a1e813f1-ae52-4b22-9fa7-e15512e41186",
+    "attemptedAt": "2026-10-20T15:39:19.244Z",
+    "httpStatus": "503",
+    "finalURL": "https://data.kcg.gov.tw/File/DirectDownload/a1e813f1-ae52-4b22-9fa7-e15512e41186",
+    "acquisitionMethod": "http",
+    "officialUpdatedAt": "",
+    "status": "download_failed",
+    "error": "HTTP 503"
+  },
+  {
+    "source": "moenv-p0",
+    "url": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731395551&ddsPageID=LINEINFO",
+    "attemptedAt": "2026-10-20T15:44:08.108Z",
+    "httpStatus": "000",
+    "finalURL": "https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6731395551&ddsPageID=LINEINFO",
+    "acquisitionMethod": "http",
+    "officialUpdatedAt": "",
+    "status": "download_failed",
+    "error": "curl: (56) CONNECT tunnel failed, response 403"
+  }
+]

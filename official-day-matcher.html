@@ -1,25 +1,376 @@
 <!doctype html>
 <html lang="zh-Hant">
-<head>
-<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>官方一般垃圾清運日批次比對</title>
-<script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
-<script src="js/route-files.js"></script><script src="js/data-core.js"></script>
-<style>body{font:16px/1.7 system-ui,sans-serif;color:#20352b;background:#f5f8f5;margin:0}main{max-width:960px;margin:auto;padding:32px 20px}section{background:white;padding:24px;border-radius:12px;margin:20px 0}button,input{font:inherit;margin:8px 12px 8px 0}button{padding:8px 16px;cursor:pointer}pre{white-space:pre-wrap}table{border-collapse:collapse;width:100%}th,td{text-align:left;border-bottom:1px solid #ccc;padding:8px}a{color:#176b41}</style>
-</head><body><main>
-<a href="index.html">返回查詢</a> · <a href="route-organizer.html">路線盤點</a> · <a href="garbage-day-review.html">人工核實</a>
-<h1>官方一般垃圾清運日批次比對</h1>
-<p>五欄完整相同才產生新增候選：來源檔案、責任區、車次、停留地點、完整停留時間。工具不會改寫網站資料。</p>
-<section><h2>準備官方資料 CSV</h2>
-<p>必要欄位：<code>來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源</code>。可以保留官方路線序號、查閱日期等附加欄位。只轉錄官方「一般垃圾」欄位，不使用資源回收日。</p>
-<p>官方未提供車次時請留空。官方路線名稱的數字不等於 CSV 車次。到點時間與完整時段視為不同資料；請勿為了通過比對改填官方未提供的時間。</p>
-<label for="official">官方資料 CSV</label><input id="official" type="file" accept=".csv,text/csv">
-<button id="run">開始比對</button><p id="status" role="status">選擇檔案後開始。會從網站載入全部 39 份路線 CSV 及現有日期對照表。</p>
-</section>
-<section><h2>比對結果</h2><pre id="summary"></pre>
-<button id="candidates" disabled>下載新增候選</button><button id="review" disabled>下載人工審核報告</button><button id="proposed" disabled>下載完整提案對照表</button>
-<p>下載後請核對證據、檢查差異並透過 Pull Request 更新。完整提案保留既有規則；有既有日期衝突或資料載入失敗時停止匯出。</p>
-<table><thead><tr><th>狀態</th><th>官方地點與時間</th><th>CSV 候選（車次｜時間｜地點）</th></tr></thead><tbody id="rows"></tbody></table>
-</section></main>
-<script src="js/official-day-matcher.js"></script>
-</body></html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>官方清運日匯入與審核工作台</title>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.5.3/papaparse.min.js"></script>
+    <script src="js/route-files.js"></script>
+    <script src="js/data-core.js"></script>
+    <script src="js/review-core.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font:
+          16px/1.65 system-ui,
+          sans-serif;
+        color: #20352b;
+        background: #f5f8f5;
+        margin: 0;
+      }
+      main {
+        max-width: 1400px;
+        margin: auto;
+        padding: 24px;
+      }
+      h1 {
+        margin-bottom: 8px;
+      }
+      h2 {
+        font-size: 1.25rem;
+      }
+      section {
+        background: white;
+        padding: 20px;
+        border: 1px solid #dce7dd;
+        border-radius: 12px;
+        margin: 18px 0;
+      }
+      button,
+      input,
+      select,
+      textarea {
+        font: inherit;
+      }
+      button {
+        padding: 8px 14px;
+        cursor: pointer;
+        border: 1px solid #a4c5b0;
+        border-radius: 6px;
+        background: #eaf4ee;
+        color: #185632;
+        margin: 5px 6px 5px 0;
+      }
+      button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      input,
+      select,
+      textarea {
+        max-width: 100%;
+        padding: 7px;
+        border: 1px solid #bacbbb;
+        border-radius: 5px;
+      }
+      input[type="file"] {
+        width: 100%;
+      }
+      label {
+        display: block;
+        margin: 8px 0 3px;
+        font-weight: 600;
+      }
+      textarea {
+        width: 100%;
+        min-height: 90px;
+      }
+      pre {
+        white-space: pre-wrap;
+        overflow-wrap: anywhere;
+        font-size: 0.85rem;
+      }
+      table {
+        border-collapse: collapse;
+        width: 100%;
+        font-size: 0.9rem;
+      }
+      th,
+      td {
+        text-align: left;
+        vertical-align: top;
+        border-bottom: 1px solid #dce7dd;
+        padding: 8px;
+        overflow-wrap: anywhere;
+      }
+      th {
+        background: #f0f6f1;
+      }
+      a {
+        color: #176b41;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+      }
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(280px, 2fr) minmax(420px, 3fr);
+        gap: 18px;
+      }
+      .filters {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+      .filters > div {
+        flex: 1;
+        min-width: 140px;
+      }
+      .diff {
+        background: #fff0d9;
+      }
+      .note {
+        padding: 12px;
+        background: #edf5ef;
+        border-left: 4px solid #397c51;
+      }
+      .warning {
+        color: #854008;
+      }
+      .selected {
+        background: #e5f3e9;
+      }
+      .entry {
+        cursor: pointer;
+      }
+      .muted {
+        color: #576b5b;
+        font-size: 0.9rem;
+      }
+      button:focus-visible,
+      a:focus-visible {
+        outline: 3px solid #538e67;
+      }
+      #listWrap {
+        overflow: auto;
+        max-height: 640px;
+      }
+      #status,
+      #validation,
+      #storageStatus,
+      #recordId {
+        overflow-wrap: anywhere;
+      }
+      #verified {
+        width: auto;
+      }
+      details {
+        margin: 10px 0;
+      }
+      .workspace > section,
+      .grid > div {
+        min-width: 0;
+      }
+      #candidateSelect {
+        width: 100%;
+        min-width: 0;
+      }
+      .comparison {
+        overflow-x: auto;
+      }
+      @media (max-width: 900px) {
+        .workspace,
+        .grid {
+          grid-template-columns: 1fr;
+        }
+        main {
+          padding: 12px;
+        }
+        section {
+          padding: 14px;
+        }
+        .comparison {
+          overflow: auto;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <nav>
+        <a href="index.html">返回查詢</a> ·
+        <a href="route-organizer.html">路線盤點</a> ·
+        <a href="garbage-day-review.html">單站核實</a>
+      </nav>
+      <h1>官方清運日匯入與審核工作台</h1>
+      <p>
+        批次匯入 → 比較差異 → 留下審核依據 →
+        下載更新提案。所有變更先保存在本機，不會直接修改 GitHub。
+      </p>
+      <p class="note">
+        只有來源檔案、責任區、車次、停留地點、完整停留時間都獲官方證據支持，才能確認日期。時間接近、地點相似及起點相同只是審核建議。不得用資源回收日推測一般垃圾日。
+      </p>
+      <section>
+        <h2>1. 匯入官方資料</h2>
+        <div class="grid">
+          <div>
+            <label for="official">官方資料 CSV</label
+            ><input id="official" type="file" accept=".csv,text/csv" /><button
+              id="run"
+            >
+              開始比對</button
+            ><button id="loadPilot">載入三民東／西區與岡山試辦資料</button>
+          </div>
+          <div>
+            <label for="supportFile">補充官方證據 CSV</label
+            ><input
+              id="supportFile"
+              type="file"
+              accept=".csv,text/csv"
+            /><button id="loadSupport" disabled>加入補充證據</button>
+            <p class="muted">
+              差異紀錄需補入完整五欄、一般垃圾日、官方來源及「對應來源紀錄ID」。不能把
+              CSV 時段抄成官方資料。
+            </p>
+          </div>
+        </div>
+        <details>
+          <summary>匯入欄位與資料取得方式</summary>
+          <p>
+            必要表頭：<code>來源檔案,責任區,車次,停留地點,停留時間,一般垃圾日,官方來源</code>。未提供車次請留白，官方路線名稱數字不等於
+            CSV
+            車次。可保留官方路線序號、原始欄位、官方更新日期、資料取得時間與證據狀態。
+          </p>
+          <p>
+            批次蒐集及 HTML／CSV／JSON 匯入命令見
+            <a href="docs/official-workflow.md">操作文件</a
+            >。快取、過舊或未核實來源不得單憑按鈕確認。
+          </p>
+        </details>
+        <p id="status" role="status">上傳官方 CSV，或載入已保存的試辦資料。</p>
+        <pre id="summary"></pre>
+      </section>
+      <section>
+        <h2>2. 進度保存與備份</h2>
+        <button id="restoreLocal">還原本機進度</button
+        ><button id="exportSession" disabled>匯出進度 JSON</button>
+        <label for="sessionFile">匯入進度 JSON</label
+        ><input
+          id="sessionFile"
+          type="file"
+          accept=".json,application/json"
+        /><button id="importSession">還原進度檔</button>
+        <p id="storageStatus" role="status">
+          審核後自動保存於此瀏覽器。建議另外匯出 JSON
+          備份；換裝置時可還原，匯出提案前會重新驗證原始資料與證據。
+        </p>
+      </section>
+      <div class="workspace">
+        <section>
+          <h2>3. 篩選與選取官方紀錄</h2>
+          <div class="filters">
+            <div>
+              <label for="reviewDistrict">行政區</label
+              ><select id="reviewDistrict">
+                <option value="">全部行政區</option>
+              </select>
+            </div>
+            <div>
+              <label for="reviewRoute">官方路線</label
+              ><select id="reviewRoute">
+                <option value="">全部路線</option>
+              </select>
+            </div>
+          </div>
+          <div class="filters">
+            <div>
+              <label for="category">差異分類</label
+              ><select id="category">
+                <option value="">全部分類</option>
+                <option>確認吻合</option>
+                <option>時間不同</option>
+                <option>缺少車次</option>
+                <option>停靠地點不同</option>
+                <option>資料衝突</option>
+                <option>找不到對應</option>
+              </select>
+            </div>
+            <div>
+              <label for="decisionFilter">審核狀態</label
+              ><select id="decisionFilter">
+                <option value="">全部狀態</option>
+                <option value="pending">待審核</option>
+                <option value="confirm">已確認</option>
+                <option value="reject">已拒絕</option>
+              </select>
+            </div>
+          </div>
+          <label for="query">地點或路線關鍵字</label
+          ><input
+            id="query"
+            type="search"
+            placeholder="輸入地點、責任區或官方路線"
+          />
+          <p id="listStatus" aria-live="polite"></p>
+          <div id="listWrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>分類／審核狀態</th>
+                  <th>官方站點與時間</th>
+                </tr>
+              </thead>
+              <tbody id="rows"></tbody>
+            </table>
+          </div>
+          <button id="previous">上一頁</button><button id="next">下一頁</button>
+        </section>
+        <section>
+          <h2>4. 並排比較與審核</h2>
+          <p id="selectedStatus">請先選取左側紀錄。</p>
+          <p id="recordId" class="muted"></p>
+          <p id="sourceInfo"></p>
+          <p id="issues" class="warning"></p>
+          <label for="candidateSelect">CSV 候選（僅供審核參考）</label
+          ><select id="candidateSelect" disabled></select>
+          <div class="comparison">
+            <table>
+              <thead>
+                <tr>
+                  <th>欄位</th>
+                  <th>官方資料</th>
+                  <th>原始 CSV 候選</th>
+                </tr>
+              </thead>
+              <tbody id="comparison"></tbody>
+            </table>
+          </div>
+          <p id="evidenceStatus" class="note"></p>
+          <details>
+            <summary>官方原始欄位與取得資訊</summary>
+            <pre id="rawFields"></pre>
+          </details>
+          <label for="reason">核對依據／拒絕原因（至少 10 字）</label
+          ><textarea
+            id="reason"
+            placeholder="記錄官方欄位、版本及班次對應依據；差異未解決時請拒絕或保持待審核。"
+          ></textarea>
+          <label
+            ><input id="verified" type="checkbox" />
+            我已核對官方一般垃圾欄位及完整五欄，未使用回收日或時間接近推測。</label
+          >
+          <button id="confirm" disabled>確認此候選</button
+          ><button id="reject" disabled>拒絕此筆配對</button
+          ><button id="reopen" disabled>重新列為待審核</button>
+          <p id="validation" role="status"></p>
+        </section>
+      </div>
+      <section>
+        <h2>5. 下載提案與審核紀錄</h2>
+        <button id="candidates" disabled>下載精確比對候選</button
+        ><button id="review" disabled>下載人工審核報告</button
+        ><button id="proposed" disabled>下載 garbage-days.csv 完整提案</button
+        ><button id="decisionLog" disabled>下載審核依據 CSV</button>
+        <p>
+          完整提案只加入已確認且重新驗證成功的規則，保留全部既有規則。尚未確認的精確候選也不會自動加入。原始時間與地點不會被修改；請檢查差異後透過
+          Pull Request 更新。
+        </p>
+      </section>
+    </main>
+    <script src="js/official-day-matcher.js"></script>
+  </body>
+</html>

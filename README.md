@@ -3,9 +3,25 @@
 以 GitHub Pages、HTML、JavaScript、Papa Parse 5.5.3 與 CSV 提供 38 個行政區的表定路線查詢。網站不需要後端或付費伺服器；不是即時垃圾車定位服務。
 
 - `index.html`：行政區、村里、地點關鍵字、一般垃圾／資源回收星期、時段、時間排序與分頁。
-- `official-day-matcher.html`：上傳官方資料，批次比對並下載新增候選、人工審核報告及完整提案。
+- `official-day-matcher.html`：批次匯入、並排審核、保存進度並下載已確認日期提案。
 - `route-organizer.html`：產生路線盤點與對照表；讀取失敗或日期衝突時停止對照表匯出。
 - `garbage-day-review.html`：人工核實單一停靠紀錄；完整五欄必須唯一對應原始 CSV。
+
+## 下一階段：官方匯入與審核工作台
+
+本階段接續 PR #1 的最新分支 `af3666a`，保留使用者修好的 `ubuntu-24.04` Actions 設定。新增可重複的官方 HTML／CSV／JSON 匯入、來源與失敗記錄、人工建議分類、行政區／路線篩選、並排比較、確認／拒絕、依據記錄、本機保存與 JSON 進度備份。
+
+操作與來源研究詳見 **[官方資料匯入與審核流程](docs/official-workflow.md)**。新版本的完整日期提案只加入已經人工確認且通過重新驗證的規則；精確候選也需要確認。
+
+```sh
+npm run import:official
+npm run report:expansion
+node scripts/serve.cjs
+```
+
+開啟 `http://127.0.0.1:4173/official-day-matcher.html`，可直接載入試辦證據。三民東區 110 筆、三民西區 327 筆、岡山區 66 筆，合計 503 筆（包含上階段三民西區 179 筆）；307 筆有審核建議、196 筆未找到建議。因車次／完整時間與來源可靠性尚未確認，安全精確新候選及新確認日期均為 **0**，全部保留待審核；三民東／西區剩餘路線仍有取得與核實缺口。
+
+新報告在 `reports/expansion/`，原始來源及登錄表在 `data/sources/`。原始 39 份 CSV、38 區查詢與 243 條既有日期規則均保持。下方數字與三民西區報告為 PR #1 的基準紀錄，最新擴充統計以新流程文件與 `reports/expansion/summary.json` 為準。
 
 ## 已核實的版本與資料來源
 
@@ -57,7 +73,7 @@
 
 2. 開啟 `official-day-matcher.html` 上傳 CSV。工具載入全部路線及現有規則；遇到缺檔、解析錯誤或缺欄會停止匯出，避免產生不完整的替換檔。
 3. 下載 `review.csv` 核對缺車次、不同時間、無對應及日期衝突。顯示的 CSV 候選只是供審核參考，不是已確認配對。
-4. 檢查 `candidates.csv`，核對官方欄位與版本後才將完整提案作為 `garbage-days.csv` 的更新內容。
+4. 核對 `candidates.csv` 與官方欄位、版本，在工作台逐筆記錄確認依據。只有已確認且重新驗證成功的紀錄會加入完整提案；再以提案作為 `garbage-days.csv` 的更新內容。
 5. 建立分支、執行測試並送 Pull Request，經人工審查後合併；工具不會自動修改 GitHub。
 
 ### 本機批次處理
@@ -124,7 +140,10 @@ GitHub Actions 執行資料測試、稽核、快照比對與 Chromium 瀏覽器�
 
 - `js/route-files.js`：唯一的 39 份檔案清單，網站、盤點與 CLI 共用。
 - `js/data-core.js`：不依賴 DOM 的正規化、五欄識別、驗證、日期套用、搜尋、批次比對與保留舊規則合併函式；同時支援瀏覽器與 Node.js。
-- `js/official-day-matcher.js`：檔案載入、畫面與下載。
+- `js/official-day-matcher.js`：檔案載入、審核畫面、本機保存與下載。
+- `js/review-core.js`：審核建議、補充證據、確認紀錄與提案驗證。
+- `scripts/official-import.cjs`：來源取得、HTML／CSV／JSON 匯入與原始資料保存。
+- `scripts/expansion-report.cjs`：可重跑試辦報告與責任區／車次缺口盤點。
 - `scripts/data-tool.cjs`：CSV 解析、稽核與報告；解析錯誤立即失敗。
 - `data/official/`：有來源的官方資料轉錄；`reports/`：可重跑的結果。
 

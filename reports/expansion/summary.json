@@ -1,0 +1,49 @@
+{
+  "officialEvidenceRows": 503,
+  "exactAutomaticCandidates": 0,
+  "pendingReview": 503,
+  "confirmedNewRules": 0,
+  "existingRules": 243,
+  "proposedRules": 243,
+  "byFile": [
+    {
+      "file": "sanmin-east.csv",
+      "officialRows": 110,
+      "officialRoutes": 4,
+      "withSuggestions": 80,
+      "noSuggestions": 30,
+      "exactAutomaticCandidates": 0
+    },
+    {
+      "file": "sanmin-west.csv",
+      "officialRows": 327,
+      "officialRoutes": 6,
+      "withSuggestions": 214,
+      "noSuggestions": 113,
+      "exactAutomaticCandidates": 0
+    },
+    {
+      "file": "gangshan.csv",
+      "officialRows": 66,
+      "officialRoutes": 2,
+      "withSuggestions": 13,
+      "noSuggestions": 53,
+      "exactAutomaticCandidates": 0
+    }
+  ],
+  "categories": {
+    "缺少車次": 503,
+    "時間不同": 307,
+    "找不到對應": 196,
+    "停靠地點不同": 104
+  },
+  "sourceStates": {
+    "unverified": 167,
+    "stale": 12,
+    "cached": 324
+  },
+  "suggestionTimeChecks": {
+    "time_extent_mismatch": 167,
+    "time_mismatch": 163
+  }
+}
