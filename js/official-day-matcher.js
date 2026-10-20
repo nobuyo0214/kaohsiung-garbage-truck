@@ -2,7 +2,8 @@
 const $ = (id) => document.getElementById(id),
   D = GarbageData,
   R = GarbageReview,
-  T = GarbageTriage;
+  T = GarbageTriage,
+  B = GarbageBatch;
 const STORAGE = "garbage-official-review-v3";
 let loading = false;
 let raw = [],
@@ -12,6 +13,7 @@ let raw = [],
   entries = [],
   marks = {},
   decisions = {},
+  batchHistory = [],
   visible = [],
   active = null;
 function read(input, download, headers) {
@@ -57,7 +59,7 @@ function save(name, rows, fields) {
   );
 }
 function snapshot() {
-  return T.session(official, evidence, decisions, marks);
+  return B.session(official, evidence, decisions, marks, batchHistory);
 }
 function persist() {
   try {
@@ -121,7 +123,7 @@ async function load(input, restored) {
         : read(input, typeof input === "string", D.HEADERS),
     ]);
     const session = restored || T.session(rows, [], {}, {});
-    T.validate(session);
+    B.validateSession(session);
     const nextEntries = T.build(data.raw, data.existing, rows);
     // Session files are untrusted; revalidate every date against current production data.
     R.proposal(
@@ -138,6 +140,7 @@ async function load(input, restored) {
     evidence = session.evidenceRows;
     marks = session.marks;
     decisions = session.decisions;
+    batchHistory = session.batchHistory || [];
     options(
       $("district"),
       [...new Set(official.map(districtOf))].map((x) => [x, x]),
@@ -263,6 +266,7 @@ function render() {
   $("previous").disabled = !active || visible.indexOf(active) === 0;
   $("next").disabled =
     !active || visible.indexOf(active) === visible.length - 1;
+  batchUI.render();
   if (!active) return;
   $("record-title").textContent =
     `#${active.sequence} ${routeOf(active.official)}｜${active.group}`;
@@ -504,7 +508,7 @@ $("run").onclick = () => {
 };
 async function restore(text) {
   try {
-    const session = T.validate(JSON.parse(text));
+    const session = B.validateSession(JSON.parse(text));
     await load(null, session);
   } catch (e) {
     $("status").textContent = "無法恢復：" + e.message;
@@ -606,3 +610,26 @@ $("proposed").onclick = async () => {
     $("proposed").disabled = false;
   }
 };
+
+const batchUI = GarbageBatchUI.create({
+  getState: () => ({
+    entries,
+    marks,
+    decisions,
+    history: batchHistory,
+    active,
+    existingCount: existing.length,
+  }),
+  onChange: (next) => {
+    marks = next.marks;
+    batchHistory = next.history;
+    persist();
+    filter(active?.sequence);
+  },
+  navigate: (sequence) => {
+    for (const id of ["district", "route", "priority", "state"])
+      $(id).value = "";
+    filter(sequence);
+    $("detail").focus();
+  },
+});

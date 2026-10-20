@@ -1,0 +1,29 @@
+{
+  "baseMain": "dcee2f31e5b7f0ed3f4e6cf0f3af4d4504626abe",
+  "observationDateTaipei": "2026-10-21",
+  "counts": {
+    "total": 179,
+    "accepted": 4,
+    "rejected": 0,
+    "pending": 175,
+    "confirmed": 0,
+    "pendingDates": 179,
+    "pairAccepted": 4,
+    "pairRejected": 0,
+    "pairPending": 132
+  },
+  "existingRules": 243,
+  "proposedRules": 243,
+  "newRules": 0,
+  "automaticConfirmedMatches": 0,
+  "observationsMatchingSnapshot": 179,
+  "retainedStale": 12,
+  "priorityFourStillPendingDates": 4,
+  "remainingRows": 175,
+  "progressSHA256": "1ae856a4d3bd1b91916a96fadfc333bff5aab09a96b3a7b09a573ea3bbd04b03",
+  "reviewSHA256": "d065a156740ba18c884fa088f5d52252ec1de448fa0883aebba17d428700ccab",
+  "reviewJSONConsistent": true,
+  "observationsSHA256": "5d0606a336bc87f35708b86251881871a75e3f8b310b934180cf8d7d31644972",
+  "officialSnapshotSHA256": "c52a79e021cef5a21c067904b3b0435965e42ba68343a0a93a89fb027f82c351",
+  "note": "觀察列只證明讀到哪些文字，不能取代官方車次與完整時段證據。批次候選紀錄不參與日期合併。"
+}

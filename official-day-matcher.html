@@ -9,13 +9,16 @@
     <script src="js/data-core.js"></script>
     <script src="js/review-core.js"></script>
     <script src="js/review-triage.js"></script>
+    <script src="js/review-batch.js"></script>
+    <script src="js/review-batch-ui.js"></script>
     <link rel="stylesheet" href="css/official-day-matcher.css" />
   </head>
   <body>
     <main>
       <nav>
         <a href="index.html">返回垃圾車查詢</a> ·
-        <a href="docs/manual-review.html">完整操作教學</a>
+        <a href="docs/manual-review.html">完整操作教學</a> ·
+        <a href="docs/official-evidence-investigation.html">本次官方證據調查</a>
       </nav>
       <h1>一般垃圾日人工審核工作台</h1>
       <p>
@@ -85,6 +88,70 @@
           >
         </div>
         <p id="progress"></p>
+        <p id="review-counts" class="notice" aria-live="polite"></p>
+        <details id="route-batch-panel">
+          <summary>整條官方路線比較與批次接受候選</summary>
+          <p>
+            表格依官方清運序排列，保留中間缺站與時間差異。CSV Seq
+            是原檔的序號；兩側順序連續也不能證明相同班次。此表顯示整條路線，不受上方優先順序篩選影響。
+          </p>
+          <label for="route-group">比較路線與責任區</label
+          ><select id="route-group"></select>
+          <p id="group-summary"></p>
+          <button id="batch-select">勾選本路線可批次處理候選</button
+          ><button id="batch-clear">清除勾選</button>
+          <p>
+            僅允許唯一同地點、同到點候選。已接受、已拒絕、已確認日期及舊證據不批次覆蓋，其他差異請按「逐筆查看」。
+          </p>
+          <div
+            class="comparison route-comparison"
+            tabindex="0"
+            aria-label="整條路線比較，可捲動查看全部站點"
+          >
+            <table class="route-table">
+              <caption>
+                官方清運序與 CSV 候選順序（參考資料）
+              </caption>
+              <thead>
+                <tr>
+                  <th>選取</th>
+                  <th>官方清運序／站點</th>
+                  <th>官方到點／一般垃圾</th>
+                  <th>CSV 候選／Seq</th>
+                  <th>順序與審核狀態</th>
+                </tr>
+              </thead>
+              <tbody id="group-rows"></tbody>
+            </table>
+          </div>
+          <label for="batch-reason">這一批的共同審核理由（至少10字）</label
+          ><textarea
+            id="batch-reason"
+            rows="2"
+            placeholder="同地點及到點一致，先接受候選；仍待官方車次與完整時段證據。"
+          ></textarea>
+          <button id="batch-preview-button">預覽這次勾選</button>
+          <div id="batch-preview" hidden>
+            <p id="batch-preview-summary"></p>
+            <ul id="batch-preview-rows"></ul>
+            <label
+              ><input
+                id="batch-attest"
+                type="checkbox"
+              />我已比較以上候選；這次只接受建議，不新增日期</label
+            ><button id="batch-apply" disabled>
+              批次接受候選建議（不新增日期）
+            </button>
+          </div>
+          <p id="batch-status" role="status"></p>
+          <label for="batch-history">批次歷程（只列尚可撤銷的批次）</label
+          ><select id="batch-history"></select
+          ><button id="batch-undo" disabled>撤銷選取批次</button>
+          <p>
+            撤銷會還原批次前的候選紀錄；批次後另作的逐筆修改會保留，日期確認不受批次撤銷影響。歷程隨進度備份保存。
+          </p>
+        </details>
+
         <label for="record">選擇紀錄</label
         ><select id="record"></select>
         <div>

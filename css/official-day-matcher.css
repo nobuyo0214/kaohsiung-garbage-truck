@@ -185,3 +185,48 @@ summary:focus-visible {
     display: block;
   }
 }
+
+#route-group,
+#batch-history {
+  width: 100%;
+}
+.route-table {
+  table-layout: auto;
+  min-width: 850px;
+  font-size: 0.93rem;
+}
+.route-table th:first-child {
+  width: 55px;
+}
+.route-table td {
+  min-width: 145px;
+}
+.route-table td:first-child {
+  min-width: 45px;
+}
+.route-table input[type="checkbox"] {
+  width: 22px;
+  height: 22px;
+}
+#batch-preview {
+  border: 2px solid #5b896b;
+  padding: 16px;
+  border-radius: 8px;
+}
+#batch-preview-rows {
+  max-height: 280px;
+  overflow: auto;
+}
+#batch-status {
+  font-weight: 600;
+}
+.route-comparison {
+  max-height: 560px;
+  overflow: auto;
+}
+.route-table thead th {
+  position: sticky;
+  top: 0;
+  background: #f3f6f3;
+  z-index: 1;
+}

@@ -1,0 +1,155 @@
+<!doctype html>
+<!-- Generated from official-evidence-investigation.md with marked 16.4.1; see docs/README.md. -->
+<html lang="zh-Hant"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>人工審核教學與官方證據調查</title><link rel="stylesheet" href="../css/official-day-matcher.css"></head><body><main><nav><a href="../official-day-matcher.html">返回人工審核工作台</a> · <a href="../index.html">返回查詢</a></nav><section><h1>三民西區官方證據調查（2026-10-21，台北時間）</h1>
+<p>本階段從 main <code>dcee2f3</code>（PR #4 已合併）建立新分支。使用者提供的 <code>review-all.csv</code> 與 <code>official-review-progress.json</code> 的來源欄位、候選接受紀錄及日期狀態已逐列核對一致，JSON為版本3，179筆原始轉錄與現有官方快照相同，沒有補充證據或日期確認。4筆接受建議的原始理由、時間與指紋均保留；未替使用者接受其他候選。</p>
+<h2>第一批4筆：查到內容，但仍不足以確認CSV班次</h2>
+<p>實際閱讀<a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO&p=2">環境部三民西區4第二頁</a>返回的頁面文字，確認路線識別為 <code>E80720023</code>，頁面另顯示清運車號 <code>945N6</code>。四筆的地點、到點及一般垃圾欄位與原快照相同：</p>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>審核編號</th>
+<th>官方清運序</th>
+<th>地點</th>
+<th>官方到點</th>
+<th>官方一般垃圾星期</th>
+<th>原CSV候選（不是官方車次證據）</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>#99</td>
+<td>51</td>
+<td>更新街與康平街口</td>
+<td>20:50</td>
+<td>一、二、四、五、六</td>
+<td>責任區四／車次3，20:50-20:52</td>
+</tr>
+<tr>
+<td>#100</td>
+<td>52</td>
+<td>更新街與通化街口</td>
+<td>20:52</td>
+<td>一、二、四、五、六</td>
+<td>責任區四／車次3，20:52-20:54</td>
+</tr>
+<tr>
+<td>#101</td>
+<td>53</td>
+<td>中華二路與中華二路12巷口</td>
+<td>20:54</td>
+<td>一、二、四、五、六</td>
+<td>責任區四／車次3，20:54-20:57</td>
+</tr>
+<tr>
+<td>#103</td>
+<td>55</td>
+<td>哈爾濱街與泰康街口</td>
+<td>21:05</td>
+<td>一、二、四、五、六</td>
+<td>責任區四／車次3，21:05-21:08</td>
+</tr>
+</tbody></table></div>
+<p><strong>這不是4筆已確認日期配對。</strong> 官方頁面沒有明列CSV責任區／車次對照、離站時間或有效版本日期。車號945N6不是車次3，路線4不是車次4，官方清運序51也不是CSV Seq。#102（官方清運序54）位於中間，分組表會保留，不能省略它再以表面上的連續性作為證據。</p>
+<p>現有轉錄的「責任區四」沿用既有規則的關聯；官方頁面本身未明列CSV責任區。它也仍需官方文件佐證，不能把轉錄中有這個值當成官方已證明。原接受理由保留為人工紀錄，本次不替它提高證據等級。</p>
+<p>尚缺：</p>
+<ol>
+<li>有效版本的官方文件，明確將路線 <code>E80720023</code> 對應原CSV責任區四、車次3，而非從地點或順序推測。</li>
+<li>官方完整停留時間；目前只有到點，不能把CSV的20:52、20:54、20:57或21:08離站時間抄入官方欄位。</li>
+<li>版本／生效日期能證明兩份資料適用同一期間。頁面沒有提供時應標示未知，不使用本次查閱日冒充。</li>
+</ol>
+<p>因此：四筆仍為「已接受候選建議」，本次充分證據確認 <strong>0</strong> 筆、新增日期 <strong>0</strong> 條。</p>
+<h2>已查找的來源與實際結果</h2>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>來源</th>
+<th>實際核對內容</th>
+<th>限制／下一步</th>
+</tr>
+</thead>
+<tbody><tr>
+<td><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6851225449&ddsPageID=LINEINFO">環境部三民西區1</a></td>
+<td>E80720020，頁面48筆的地點／到點／一般垃圾欄位與快照一致</td>
+<td>未見CSV車次、離站時間或跨來源對照；原CSV三民西區責任區一僅1筆，應向提供機關確認47筆缺口</td>
+</tr>
+<tr>
+<td><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO">環境部三民西區4第一頁</a>及<a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=5739844254&ddsPageID=LINEINFO&p=2">第二頁</a></td>
+<td>共69筆與快照一致，含優先4筆</td>
+<td>僅到點；無CSV車次對照。較早的同地點16:23與20:50是不同時間，不能視為同班</td>
+</tr>
+<tr>
+<td><a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471148285&ddsPageID=LINEINFO">環境部三民西區6第一頁</a>及<a href="https://hwms.moenv.gov.tw/dispPageBox/route/routeCP.aspx?dbid=6471148285&ddsPageID=LINEINFO&p=2">第二頁</a></td>
+<td>共62筆與快照一致；第二頁12筆亦重新讀到相同文字</td>
+<td>不能證明原快取版本已更新；12筆繼續保留stale，批次接受排除，不新增日期</td>
+</tr>
+<tr>
+<td><a href="https://data.gov.tw/dataset/106982">政府資料開放平臺106982</a></td>
+<td>實際閱讀欄位說明及CSV／JSON資源連結。欄位列有Seq、責任區、車次、回收日、停留時間、地點及座標；授權為政府資料開放授權條款第1版</td>
+<td>欄位清單不是資料本文；沒有一般垃圾日或環境部路線識別欄位。詮釋資料更新時間2025-06-30 14:52不是路線有效／更新日期</td>
+</tr>
+<tr>
+<td><a href="https://data.kcg.gov.tw/File/DirectDownload/7ce09ffa-17e1-4f1a-ab72-3d55ca95b2e5">高雄CSV下載</a>、<a href="https://openapi.kcg.gov.tw/Api/Service/Get/7ce09ffa-17e1-4f1a-ab72-3d55ca95b2e5">JSON API</a>及<a href="https://data.kcg.gov.tw/DataSet/Detail/f3bab022-ccec-4fd8-b131-ee534676724f">資料集頁</a></td>
+<td>網址由106982頁面實際取得，未臆造API路徑。CSV直接下載得到HTTP503；閱讀服務CSV／JSON逾時或無法存取</td>
+<td>沒有取得本文，不聲稱已核實新版內容；需要在可連線環境重新下載並保留原文與版本</td>
+</tr>
+<tr>
+<td><a href="https://ksemd.ksepb.kcg.gov.tw/StaticPage/waste-collection">高雄市環境管理處垃圾清運說明</a></td>
+<td>內文明列官方GPS平台與向各區清潔隊查詢的管道</td>
+<td>本頁不是逐站對照表，沒有本次四筆所需的車次及離站時間</td>
+</tr>
+<tr>
+<td><a href="https://kepbgps.kcg.gov.tw/">高雄市清潔車便民查詢平台</a></td>
+<td>入口由上述官方頁面確認，實際嘗試讀取但逾時</td>
+<td>尚未取得路線查詢內容或公開API規格，不能宣稱其中存在或不存在對照文件</td>
+</tr>
+<tr>
+<td><a href="https://ksepb.kcg.gov.tw/cleanup/springfestival/3c8d7302-5c7b-42e1-957b-809407386f44">三民西區春節清運公告</a></td>
+<td>實際閱讀到特定春節日期異動</td>
+<td>不用節慶異動或回收路線推導全年一般垃圾星期／CSV車次</td>
+</tr>
+</tbody></table></div>
+<p>另外搜尋 <code>E80720023 車次</code>、<code>三民西區 責任區 更新街</code>、<code>三民西區 945 車次</code>、<code>三民西區 四 20:50 車次</code>及相關官方文件，本次可取得結果未找到可明確建立所需關聯的文件；<strong>不代表文件一定不存在</strong>。</p>
+<p>路線內容透過搜尋／網頁閱讀服務取得，可能使用快取；執行環境直接連環境部站台遭CONNECT403。重新讀到完整文字只能記錄觀察，不能保證官方版本新鮮。取得／記錄時間、台北查閱日期與官方更新日期分欄保存；官方更新日期一律未知。資料放在 <code>data/investigations/</code>，不放入可確認日期的官方補充證據。原快照與12筆stale標記都不修改。</p>
+<h2>剩餘175筆的缺口</h2>
+<p>全體179筆皆未取得官方CSV車次對照與完整停留時段證據；179筆頁面文字觀察與原快照相同，仍不具備日期配對資格。</p>
+<div class="comparison"><table>
+<thead>
+<tr>
+<th>剩餘群組</th>
+<th align="right">筆數</th>
+<th>要解決的問題</th>
+</tr>
+</thead>
+<tbody><tr>
+<td>同地點、同到點，已存在日期規則</td>
+<td align="right">63</td>
+<td>保留既有規則，不宣稱本次重新查證；可批次記錄候選建議，無日期新增</td>
+</tr>
+<tr>
+<td>同地點但時間不同</td>
+<td align="right">40</td>
+<td>需要官方版本與班次對照，不能用接近時間認定同班</td>
+</tr>
+<tr>
+<td>同責任區無完全相同地點</td>
+<td align="right">60</td>
+<td>其中責任區一有47筆缺口；先找完整官方原始清單，不跨區補配</td>
+</tr>
+<tr>
+<td>舊證據</td>
+<td align="right">12</td>
+<td>需能證明有效版本的新證據，維持stale與待查</td>
+</tr>
+</tbody></table></div>
+<p>候選狀態：已接受4／全數拒絕0／待處理175。日期狀態：本次確認0／仍待查179，正式243條規則保持原狀。沒有替管理員批次接受剩餘63筆；必須在工作台比較、勾選、預覽並明確套用。</p>
+<h2>可重複的報告與下一步</h2>
+<pre><code class="language-sh">npm run investigate:sanmin-west -- --progress path/to/official-review-progress.json --review path/to/review-all.csv
+# 可自訂報告目錄
+node scripts/evidence-report.cjs --progress path/to/progress.json --review path/to/review.csv --out work/evidence
+</code></pre>
+<p>需要原上傳兩檔才能重現「已接受4」的計數；不帶進度則產生全部未處理的調查報告。腳本核對CSV與JSON，發現差異會另存 <code>input-differences.csv</code> 並停止本次提案，不忽略其中一份。觀察資料永遠不送入日期比對作為證據。</p>
+<p><code>reports/sanmin-west-evidence/</code> 包含：四筆調查、剩餘175筆與全179筆缺口、依官方清運序排列的比較表、243條保留提案及摘要。摘要記錄原附件雜湊供重跑核對；不公開整份使用者進度或把它當預設全站管理狀態。</p>
+<p>建議下一步向資料提供機關索取同一版本的對照文件。以下文字可由管理員自行使用，<strong>本工具沒有寄出任何詢問</strong>：</p>
+<blockquote>
+<p>請提供環境部路線E80720023（三民西區4）與高雄開放資料責任區四、車次3的正式對照、版本／生效日期，以及清運序51、52、53、55的到站與離站時間、一般垃圾星期。另請提供E80720020責任區一的完整站點清單，及E80720025清運序51至62的新版本資料。若官方僅有到點時間，請明確說明無離站時間，無需補造完整時段。</p>
+</blockquote>
+</section></main></body></html>
