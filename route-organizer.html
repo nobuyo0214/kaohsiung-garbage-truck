@@ -15,128 +15,16 @@ table{width:100%;border-collapse:collapse}td,th{border-bottom:1px solid #e2eae4;
 </head><body>
 <header><h1>垃圾車清運日對照表整理工具</h1><p>自動盤點 39 份 CSV，區分已確認日期與待查證路線</p></header>
 <main>
+<p><a href="official-day-matcher.html">官方一般垃圾日批次比對工具</a></p>
 <p>請把本頁 <code>route-organizer.html</code> 上傳到同一個 GitHub 儲存庫，使用 GitHub Pages 開啟後，按下開始整理。</p>
 <div class="buttons"><button id="start">讀取並整理 39 份 CSV</button><button id="downloadMap" disabled>下載垃圾日對照表</button><button id="downloadInventory" disabled>下載路線盤點清單</button></div>
 <p id="message" role="status">尚未開始。程式不會修改原始 CSV，也不會自動寫入 GitHub。</p>
 <h2>整理方式</h2>
-<ul><li>如果原始 CSV 已有「一般垃圾日」及可核對的 HTTPS「官方來源」，會建立<strong>停靠站層級</strong>的精確對照規則。</li><li>保留原本 <code>garbage-days.csv</code> 的有效規則；相同停靠站但日期衝突者不自動輸出。</li><li>其餘路線只放進「路線盤點清單」，一般垃圾日留空，等待你核對後填入。</li></ul>
+<ul><li>如果原始 CSV 已有「一般垃圾日」及可核對的 HTTPS「官方來源」，會建立<strong>停靠站層級</strong>的精確對照規則。</li><li>保留原本 <code>garbage-days.csv</code> 的有效規則；遇到日期衝突或載入失敗會停止整份對照表匯出，避免遺失已確認規則。</li><li>其餘路線只放進「路線盤點清單」，一般垃圾日留空，等待你核對後填入。</li></ul>
 <p class="tip">提醒：一般垃圾清運日不等於資源回收日；不能把既有「回收日」直接填入新對照表。相同責任區和車次也可能有不同停靠日期。</p>
 <table><thead><tr><th>輸出檔案</th><th>用途</th></tr></thead><tbody><tr><td>garbage-days-generated.csv</td><td>有來源證據、可供網站使用的規則（下載後檢查，再改名為 garbage-days.csv）</td></tr><tr><td>route-inventory.csv</td><td>每條來源檔案／責任區／車次組合的筆數、樣本停靠站、待核對狀態</td></tr></tbody></table>
 </main>
-<script>
-const files = [
-      { name: "garbage-truck.csv", district: "前鎮區" },
-      { name: "sanmin-east.csv", district: "三民區" },
-      { name: "sanmin-west.csv", district: "三民區" },
-      { name: "lingya.csv", district: "苓雅區" },
-      { name: "fengshan-north.csv", district: "鳳山區" },
-      { name: "fengshan-south.csv", district: "鳳山區" },
-      { name: "zuoying.csv", district: "左營區" },
-      { name: "nanzih.csv", district: "楠梓區" },
-      { name: "gushan.csv", district: "鼓山區" },
-      { name: "renwu.csv", district: "仁武區" },
-      { name: "linyuan.csv", district: "林園區" },
-      { name: "dashu.csv", district: "大樹區" },
-      { name: "dashe.csv", district: "大社區" },
-      { name: "qieding.csv", district: "茄萣區" },
-      { name: "qianjin.csv", district: "前金區" },
-      { name: "yancheng.csv", district: "鹽埕區" },
-      { name: "qijin.csv", district: "旗津區" },
-      { name: "qiaotou.csv", district: "橋頭區" },
-      { name: "yanchao.csv", district: "燕巢區" },
-      { name: "alian.csv", district: "阿蓮區" },
-      { name: "mituo.csv", district: "彌陀區" },
-      { name: "neimen.csv", district: "內門區" },
-      { name: "meinong.csv", district: "美濃區" },
-      { name: "xinxing.csv", district: "新興區" },
-      { name: "gangshan.csv", district: "岡山區" },
-      { name: "luzhu.csv", district: "路竹區" },
-      { name: "hunei.csv", district: "湖內區" },
-      { name: "yongan.csv", district: "永安區" },
-      { name: "ziguan.csv", district: "梓官區" },
-      { name: "tianliao.csv", district: "田寮區" },
-      { name: "qishan.csv", district: "旗山區" },
-      { name: "liugui.csv", district: "六龜區" },
-      { name: "jiaxian.csv", district: "甲仙區" },
-      { name: "niaosong.csv", district: "鳥松區" },
-      { name: "xiaogang.csv", district: "小港區" },
-      { name: "shanlin.csv", district: "杉林區" },
-      { name: "taoyuan.csv", district: "桃源區" },
-      { name: "maolin.csv", district: "茂林區" },
-      { name: "namaxia.csv", district: "那瑪夏區" }
-    ];
-const $=id=>document.getElementById(id);
-const trim=v=>String(v===undefined||v===null?'':v).trim();
-const columns=['來源檔案','責任區','車次','停留地點','停留時間','一般垃圾日','官方來源'];
-let mapRows=[],inventoryRows=[];
-const validDay=s=>/^[一二三四五六日、,，\s]+$/.test(trim(s))&&!!trim(s);
-const key=r=>['來源檔案','責任區','車次','停留地點','停留時間'].map(c=>trim(r[c])).join('\u001f');
-function readCSV(name){return new Promise((resolve,reject)=>{
-  Papa.parse(name,{download:true,header:true,skipEmptyLines:'greedy',transformHeader:h=>trim(h).replace(/^\uFEFF/,''),
-    complete:res=>resolve(res),error:reject});
-});}
-function saveCSV(filename,cols,rows){
-  const content='\uFEFF'+Papa.unparse({fields:cols,data:rows.map(row=>cols.map(c=>trim(row[c])))}, {newline:'\r\n'});
-  const blob=new Blob([content],{type:'text/csv;charset=utf-8'});const link=document.createElement('a');link.href=URL.createObjectURL(blob);
-  link.download=filename;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(link.href),2000);
-}
-async function generate(){
-  $('start').disabled=true;$('downloadMap').disabled=true;$('downloadInventory').disabled=true;
-  mapRows=[];inventoryRows=[];
-  const validFiles=new Set(files.map(f=>f.name));const collected=[];const routeGroups=new Map();const failures=[];
-  let stopCount=0;
-  const settled=await Promise.allSettled(files.map(f=>readCSV(f.name)));
-  settled.forEach((result,i)=>{
-    const f=files[i];if(result.status!=='fulfilled'){failures.push(f.name);return;}
-    const parsed=result.value;if(!(parsed.meta.fields||[]).includes('停留地點')){failures.push(f.name+' (缺少停留地點)');return;}
-    for(const row of parsed.data){
-      if(!trim(row['停留地點']))continue;
-      stopCount++;
-      const groupKey=[f.name,trim(row['責任區']),trim(row['車次'])].join('\u001f');
-      if(!routeGroups.has(groupKey)) routeGroups.set(groupKey,{
-        '行政區':f.district,'來源檔案':f.name,'責任區':trim(row['責任區']),'車次':trim(row['車次']),
-        '停靠紀錄數':0,'範例停靠地點':trim(row['停留地點']),'原始一般垃圾日筆數':0,'待查證':'是'
-      });
-      const group=routeGroups.get(groupKey);group['停靠紀錄數']++;
-      const day=trim(row['一般垃圾日']||row['一般垃圾清運日']);
-      const url=trim(row['官方來源']);
-      if(day)group['原始一般垃圾日筆數']++;
-      if(validDay(day)&&/^https:\/\//i.test(url)&&trim(row['責任區'])&&trim(row['車次'])){
-        collected.push({'來源檔案':f.name,'責任區':trim(row['責任區']),'車次':trim(row['車次']),
-          '停留地點':trim(row['停留地點']),'停留時間':trim(row['停留時間']),
-          '一般垃圾日':day,'官方來源':url});
-      }
-    }
-  });
-  try{
-    const old=await readCSV('garbage-days.csv');
-    if(columns.every(c=>(old.meta.fields||[]).includes(c))){
-      for(const row of old.data){
-        if(validFiles.has(trim(row['來源檔案']))&&trim(row['責任區'])&&trim(row['車次'])&&
-          validDay(row['一般垃圾日'])&&/^https:\/\//i.test(trim(row['官方來源'])))
-          collected.push(Object.fromEntries(columns.map(c=>[c,trim(row[c])])));
-      }
-    }
-  }catch(err){$('message').textContent='無法讀取原對照表，將只整理原始 CSV。';}
-  const unique=new Map(),conflict=new Set();
-  for(const r of collected){const k=key(r);if(unique.has(k)&&unique.get(k)['一般垃圾日']!==r['一般垃圾日'])conflict.add(k);
-    else if(!unique.has(k))unique.set(k,r);}
-  for(const k of conflict)unique.delete(k);
-  mapRows=[...unique.values()].sort((a,b)=>a['來源檔案'].localeCompare(b['來源檔案'])||a['責任區'].localeCompare(b['責任區'])||a['車次'].localeCompare(b['車次'])||a['停留時間'].localeCompare(b['停留時間']));
-  const knownGroups=new Set(mapRows.map(r=>[r['來源檔案'],r['責任區'],r['車次']].join('\u001f')));
-  inventoryRows=[...routeGroups.entries()].map(([k,r])=>({...r,'待查證':knownGroups.has(k)?'部分站點有資料，仍須核對':'是'}));
-  inventoryRows.sort((a,b)=>a['行政區'].localeCompare(b['行政區'],'zh-Hant')||a['來源檔案'].localeCompare(b['來源檔案'])||a['責任區'].localeCompare(b['責任區']));
-  $('message').textContent='整理完成！\n路線 CSV：'+(files.length-failures.length)+' / '+files.length+
-     '\n有效停靠紀錄：'+stopCount.toLocaleString('zh-TW')+
-     '\n來源檔案＋責任區＋車次組合：'+inventoryRows.length+
-     '\n已確認日期對照規則：'+mapRows.length+
-     '\n有日期衝突而略過：'+conflict.size+
-     '\n載入失敗：'+(failures.length?failures.join('、'):'無')+
-     '\n\n請下載兩份 CSV；確認後再將產生的對照表取代原 garbage-days.csv。';
-  $('start').disabled=false;$('downloadMap').disabled=false;$('downloadInventory').disabled=false;
-}
-$('start').addEventListener('click',()=>generate().catch(err=>{$('message').textContent='整理失敗：'+err.message;$('start').disabled=false;}));
-$('downloadMap').addEventListener('click',()=>saveCSV('garbage-days-generated.csv',columns,mapRows));
-$('downloadInventory').addEventListener('click',()=>saveCSV('route-inventory.csv', ['行政區','來源檔案','責任區','車次','停靠紀錄數','範例停靠地點','原始一般垃圾日筆數','待查證'],inventoryRows));
-</script>
+<script src="js/route-files.js"></script>
+<script src="js/data-core.js"></script>
+<script src="js/route-organizer.js"></script>
 </body></html>

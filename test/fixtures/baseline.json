@@ -1,0 +1,201 @@
+{
+  "commit": "068ed479e617baa73672b78bc02bad06c908065d",
+  "files": [
+    {
+      "file": "garbage-truck.csv",
+      "rows": 1009,
+      "sha256": "4fed5f7e3227d6df24ac8964df3f875883634c0d31d969418324a3df432ad5f8"
+    },
+    {
+      "file": "sanmin-east.csv",
+      "rows": 975,
+      "sha256": "3cb9339074cf0fa7dbac79c9c4c0d589270b4fc2a28fa87a88cc958c542f94d9"
+    },
+    {
+      "file": "sanmin-west.csv",
+      "rows": 762,
+      "sha256": "6f96f8616ea64e10e3e0d6ad51aadb4d8a58d59cf2ae640ecf2834e307309be8"
+    },
+    {
+      "file": "lingya.csv",
+      "rows": 191,
+      "sha256": "61b3c76902ecb75d1f649c6423c6e1a23d1dd95e1e412c46dccff0d49e901eae"
+    },
+    {
+      "file": "fengshan-north.csv",
+      "rows": 1422,
+      "sha256": "a0d9dbc155c102e9833507976707b854cab6b176886d1c0ff64138269d5bf9e0"
+    },
+    {
+      "file": "fengshan-south.csv",
+      "rows": 1040,
+      "sha256": "1bbc21c531f15c71f412a56fb6984a06e68b8799b657c69a74d20c0c513fd969"
+    },
+    {
+      "file": "zuoying.csv",
+      "rows": 197,
+      "sha256": "218e605f5ab8d5f5eb9315aaa4e385ddd750dc1baf4b48f37122926e1cc0a490"
+    },
+    {
+      "file": "nanzih.csv",
+      "rows": 1160,
+      "sha256": "a65be5fe15f5f6762e035b36669d94850bc81116c4bc276c8d138ce21dd7e82f"
+    },
+    {
+      "file": "gushan.csv",
+      "rows": 497,
+      "sha256": "30383a5fccbecb761f7ebb1674f93eacd0bb7c00ccf9dfec1d701e077f831a53"
+    },
+    {
+      "file": "renwu.csv",
+      "rows": 1091,
+      "sha256": "2a1f424b8cb995daf86073ca12dd200816680eb727f87cc3d8f03d0c32f0a7ad"
+    },
+    {
+      "file": "linyuan.csv",
+      "rows": 332,
+      "sha256": "19b1e6d2b4663395c08006a9d9ee6e126829260eb8aca01af2e22d0148361cfa"
+    },
+    {
+      "file": "dashu.csv",
+      "rows": 332,
+      "sha256": "592948bd9bf3b84e41d30f8ee168243d7565cf6312878a78d1210069b3ae0a48"
+    },
+    {
+      "file": "dashe.csv",
+      "rows": 223,
+      "sha256": "73f9ae385f2f89a8f0674da3d31df6c356d26562f55b5584d7eca5230c3ffe36"
+    },
+    {
+      "file": "qieding.csv",
+      "rows": 123,
+      "sha256": "db55b7462340ef97db5bd59165d34641e200d408a7926eb483222bc6441c4c9f"
+    },
+    {
+      "file": "qianjin.csv",
+      "rows": 181,
+      "sha256": "348933bb75b3dd7f3445cea3bdfeff8de8464e83b6c7e6a5fba9fcd13e63df4e"
+    },
+    {
+      "file": "yancheng.csv",
+      "rows": 159,
+      "sha256": "7d290db8ac652f7d846960aad4ffc647b0245c432f0001640d4425bf69a4c4df"
+    },
+    {
+      "file": "qijin.csv",
+      "rows": 168,
+      "sha256": "afe903bba4c56d93cb7a984e11d79d6a7d4e43d6c5e60eb614dc131c567d6de2"
+    },
+    {
+      "file": "qiaotou.csv",
+      "rows": 265,
+      "sha256": "25dc98b7cd3dde9697c7718d4b8f0fa1819f2f421257b0fbc59fd058233561b8"
+    },
+    {
+      "file": "yanchao.csv",
+      "rows": 101,
+      "sha256": "5267aebbad53a33b96aad046d1e18894392fdd13f87508139a60e9de48e5e9c6"
+    },
+    {
+      "file": "alian.csv",
+      "rows": 460,
+      "sha256": "160b1bd951b10da1860c3485ede10b438088bf7b6a8d1e00b47faff6dde02f5d"
+    },
+    {
+      "file": "mituo.csv",
+      "rows": 413,
+      "sha256": "ea4364f5818a863f3d6535ad8345c91ed5893752cc1e2c625f322f1946770c21"
+    },
+    {
+      "file": "neimen.csv",
+      "rows": 221,
+      "sha256": "2d4c126020d7665a31cc8a3870ffa9d2e467307841d8bf9405cb8b85336bb64a"
+    },
+    {
+      "file": "meinong.csv",
+      "rows": 268,
+      "sha256": "1d7d030ec91cc5ca9fb01236995571d84c1dd387b48a852d1d04b5c157af3c1e"
+    },
+    {
+      "file": "xinxing.csv",
+      "rows": 116,
+      "sha256": "db844f1311ea6eae2699cb9fdb719b89756e0427a73d2547634dab6198d051ea"
+    },
+    {
+      "file": "gangshan.csv",
+      "rows": 318,
+      "sha256": "f79734b18b3730a6f68c746319bbdbc6caad5b4470152ac121af5fc7a8eda696"
+    },
+    {
+      "file": "luzhu.csv",
+      "rows": 227,
+      "sha256": "393f9dc874581d5773be742f8f731c4c3e7b0dfa4d2c019c0ebed019b99cb472"
+    },
+    {
+      "file": "hunei.csv",
+      "rows": 184,
+      "sha256": "bea3346a065d752790bec80cb1c8460a39cfed5e81fe196edaf638bb4a160b45"
+    },
+    {
+      "file": "yongan.csv",
+      "rows": 82,
+      "sha256": "c7787b497fb9d96806518aedbe10d00dea67b3d73f695dc4924a341d3806a653"
+    },
+    {
+      "file": "ziguan.csv",
+      "rows": 393,
+      "sha256": "2029592e3df263c765e7b5cc9f47994550128eeb66c861c0f6f49205363e5775"
+    },
+    {
+      "file": "tianliao.csv",
+      "rows": 59,
+      "sha256": "5f52b7726138f952901478f9dbe90b8110638441b6a992af15adf9ed9033748a"
+    },
+    {
+      "file": "qishan.csv",
+      "rows": 404,
+      "sha256": "30bbc4c2351957934b1774b9a1f6f2cc9b2ef38a5284b2e9385c90c19caf4363"
+    },
+    {
+      "file": "liugui.csv",
+      "rows": 240,
+      "sha256": "d23899b4c07a55f69403a6295d1a5e4cca3bc0bff3f415af17ef1d7bd5bd67f3"
+    },
+    {
+      "file": "jiaxian.csv",
+      "rows": 146,
+      "sha256": "26baa8f386fcbf366efc8953141fe9ddd3b6971ce833b7fbfdc9f786911f5067"
+    },
+    {
+      "file": "niaosong.csv",
+      "rows": 60,
+      "sha256": "692b8141a1bae63516bcd6bab5740b52eee0192b7ea63fd13b0539b6c037a614"
+    },
+    {
+      "file": "xiaogang.csv",
+      "rows": 118,
+      "sha256": "c293ec555ea55bab303998ab83197c7fe2c495750b64e7a2c7c574ad1a9e7922"
+    },
+    {
+      "file": "shanlin.csv",
+      "rows": 83,
+      "sha256": "84bca2fbb0108d46c46ea50bd36d6eb9d6d89d369cfe71908e3902bd12b1ef50"
+    },
+    {
+      "file": "taoyuan.csv",
+      "rows": 15,
+      "sha256": "0faf923eda0f930e75b10c7c9b9fb162eff064a4bc5fd47dd5f9df78eb97392c"
+    },
+    {
+      "file": "maolin.csv",
+      "rows": 3,
+      "sha256": "0dc23f06d36fad510790e6326dcf4d4c9b39aae6e4ab4e4e73d1d055296dc8a7"
+    },
+    {
+      "file": "namaxia.csv",
+      "rows": 19,
+      "sha256": "196e04b9e2708c30a6af84eb749ef562739355fd76f1031a7dcdb11a5878e0bb"
+    }
+  ],
+  "rulesSha256": "fa2cf2dacb47fb6c3ad990c390a0e2d1840527fdadaf741ed0fc4f4751a8c432"
+}
