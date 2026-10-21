@@ -9,7 +9,6 @@
     "district",
     "village",
     "keyword",
-    "dayType",
     "weekday",
     "period",
     "sortOrder",
@@ -25,7 +24,8 @@
   let currentMatches = [],
     visibleCount = 0,
     savedView = false,
-    activeFilters = null;
+    activeFilters = null,
+    retiredSearchNotice = "";
   let failedFiles = [],
     mapping = { ok: false },
     preferences = { favorites: [], recent: [] };
@@ -83,13 +83,16 @@
     }
   }
   function filters() {
-    return Object.fromEntries(filterIds.map((id) => [id, $(id).value]));
+    return {
+      ...Object.fromEntries(filterIds.map((id) => [id, $(id).value])),
+      dayType: "recycle",
+    };
   }
   function searchDescription(f) {
     const parts = [f.district, f.village, D.clean(f.keyword)];
     if (f.weekday)
       parts.push(
-        (f.dayType === "garbage" ? "垃圾" : "回收") + "・週" + f.weekday,
+        f.dayType === "garbage" ? "舊星期條件已停用" : "回收・週" + f.weekday,
       );
     if (f.period)
       parts.push(
@@ -110,16 +113,25 @@
       button.title = label;
       button.disabled = !loaded;
       button.addEventListener("click", () => {
+        const retired = f.dayType === "garbage";
         $("district").value = f.district;
         updateVillages();
         for (const id of filterIds.filter((id) => id !== "district"))
-          $(id).value = f[id];
+          $(id).value = id === "weekday" && retired ? "" : f[id];
         // A village may disappear in a new CSV; disclose rather than silently widening the search.
         if ($("village").value !== f.village) {
           toast("這筆搜尋的村里目前未載入，已保留紀錄；請重新選擇村里。");
           return;
         }
-        searchTruck();
+        const notice = retired
+          ? "舊搜尋的星期條件已不再提供，未套用原星期。其他條件已保留；請重新選擇資源回收星期。"
+          : "";
+        searchTruck({ remember: !retired, scroll: !retired, notice });
+        if (retired) {
+          $("advancedFilters").open = true;
+          $("weekday").focus();
+          toast(notice);
+        }
       });
       $("recentSearches").append(button);
     }
@@ -171,32 +183,28 @@
     const district = savedView
       ? ""
       : activeFilters?.district || $("district").value;
-    const messages = [];
+    const messages = retiredSearchNotice ? [retiredSearchNotice] : [];
     if (savedView)
       messages.push(
-        "收藏顯示所有行政區，未套用左側篩選；日期依當次載入資料顯示。",
+        "收藏顯示所有行政區，未套用左側篩選；資源回收日依當次載入資料顯示。",
       );
     else {
       const rows = index.districts.get(district) || [],
-        known = rows.filter((r) => D.clean(r.garbageDay)).length;
-      if (!known)
+        known = rows.filter((r) => D.clean(r.recycleDay)).length;
+      if (!known && activeFilters?.weekday)
         messages.push(
-          "此區尚未提供一般垃圾清運日，無法確認今日清運；不表示今天沒有垃圾車。",
+          "此區尚未提供資源回收日，無法篩選回收星期；不表示沒有垃圾車。",
         );
-      else if (known < rows.length)
+      else if (known < rows.length && activeFilters?.weekday)
         messages.push(
-          "本區僅 " +
-            known +
-            " / " +
-            rows.length +
-            " 筆有一般垃圾日；星期篩選不包含未提供日期的站點。",
+          "星期篩選僅包含已提供對應資源回收日的站點。",
         );
       if (failedFiles.some((name) => affectsDistrict(name, district)))
         messages.push("本區部分路線尚未載入，搜尋結果可能不完整，請重試載入。");
     }
     if (!mapping.ok && loaded)
       messages.push(
-        "一般垃圾日期對照表未載入；目前僅顯示原始 CSV 已有的日期，請重試。",
+        "部分版本驗證資料未載入；已取得的資源回收資訊仍可查詢，請重試載入。",
       );
     $("filterNotice").textContent = messages.join(" ");
   }
@@ -214,10 +222,11 @@
       $("resultsHeading").scrollIntoView({ block: "start" });
     }
   }
-  function searchTruck({ remember = true, scroll = true } = {}) {
+  function searchTruck({ remember = true, scroll = true, notice = "" } = {}) {
     if (!loaded) return;
     extras.clearShared();
     savedView = false;
+    retiredSearchNotice = notice;
     activeFilters = filters();
     currentMatches = index.search(activeFilters);
     if (remember) {
@@ -232,6 +241,7 @@
   }
   function showSaved({ scroll = true } = {}) {
     savedView = true;
+    retiredSearchNotice = "";
     extras.clearShared();
     updateViewButtons();
     if (!loaded) {
@@ -291,10 +301,10 @@
           "回到搜尋結果",
           () => searchTruck({ remember: false }),
         );
-      else if (activeFilters.dayType === "garbage" && activeFilters.weekday)
+      else if (activeFilters.weekday)
         emptyState(
-          "沒有符合的已知垃圾站點",
-          "部分站點尚未提供一般垃圾星期；沒有結果不表示當天沒有清運。可清除條件查看其他停靠資訊。",
+          "沒有符合的資源回收站點",
+          "請改選回收星期、街道或時段；未提供回收日的站點不會列入星期篩選。這不表示沒有垃圾車。",
           "清除條件，查看本區",
           resetFilters,
         );
@@ -344,13 +354,18 @@
   }
   async function copyStop(row) {
     $("copyHeading").textContent = "複製停靠資訊";
+    const time = D.normalizeTime(row.停留時間),
+      timeLabel = time
+        ? time.includes("-")
+          ? "表定停留時間"
+          : "表定到點時間"
+        : "原始時間（待確認）";
     const text = [
       row.searchDistrict + " " + (row.villageName || "村里尚未提供"),
       D.clean(row.停留地點),
-      "停留時間：" + (D.clean(row.停留時間) || "尚未提供"),
-      "一般垃圾日：" + (D.clean(row.garbageDay) || "尚未提供"),
+      timeLabel + "：" + (D.clean(row.停留時間) || "尚未提供"),
       "資源回收日：" + (D.clean(row.recycleDay) || "尚未提供"),
-      "表定資訊，非即時車輛位置",
+      "表定停靠資訊，非即時車輛定位",
     ].join("\n");
     try {
       if (!navigator.clipboard?.writeText) throw Error("clipboard unavailable");
@@ -396,24 +411,14 @@
       element("p", "time-caption", caption),
     );
     const days = element("dl", "day-grid");
-    for (const [label, value] of [
-      ["一般垃圾日", row.garbageDay],
-      ["資源回收日", row.recycleDay],
-    ]) {
-      const pair = element("div", "day-detail"),
-        day = D.clean(value);
-      pair.append(
-        element("dt", "", label),
-        element("dd", day ? "" : "unknown", day || "尚未提供"),
-      );
-      days.append(pair);
-    }
+    const pair = element("div", "day-detail"),
+      day = D.clean(row.recycleDay);
+    pair.append(
+      element("dt", day ? "" : "sr-only", "資源回收日"),
+      element("dd", day ? "" : "unknown", day || "資源回收日尚未提供"),
+    );
+    days.append(pair);
     const actions = element("div", "card-actions");
-    const route =
-      "責任區 " +
-      (D.clean(row.責任區) || "尚未提供") +
-      " · 車次 " +
-      (D.clean(row.車次) || "尚未提供");
     const copy = element("button", "copy-button");
     copy.type = "button";
     copy.append(icon("copy"), document.createTextNode("複製資訊"));
@@ -422,7 +427,7 @@
       "複製資訊：" + row.停留地點 + " " + row.停留時間,
     );
     copy.addEventListener("click", () => copyStop(row));
-    actions.append(element("span", "route-meta", route), copy);
+    actions.append(copy);
     card.append(days, actions);
     if (index.occurrences.get(row) > 1)
       card.append(
@@ -474,7 +479,6 @@
   function resetFilters() {
     $("keyword").value = "";
     $("village").value = "";
-    $("dayType").value = "recycle";
     $("weekday").value = "";
     $("period").value = "";
     $("sortOrder").value = "asc";
@@ -538,7 +542,7 @@
         " 份資料，" +
         truckData.length.toLocaleString("zh-TW") +
         " 筆有效紀錄。" +
-        (mapping.ok ? mapping.rules + " 條規則。" : "部分日期資料未載入。");
+        (mapping.ok ? "資料版本檢查完成。" : "部分版本驗證資料未載入。");
       $("dataStatus").parentElement.classList.toggle(
         "warning",
         failedFiles.length > 0 || !mapping.ok,
@@ -548,15 +552,9 @@
           ? "載入失敗：" + failedFiles.join("、") + "。"
           : "所有路線檔案均已載入。",
         mapping.ok
-          ? "日期配對 " +
-            mapping.matched +
-            " 筆；略過 " +
-            mapping.skipped +
-            " 筆、衝突 " +
-            mapping.conflicts +
-            " 條。"
-          : "無法讀取一般垃圾日期對照表。",
-        "相同班次、地點、完整時間、村里與兩種星期的重複卡片合併顯示 " +
+          ? "資料版本檢查完成。"
+          : "部分版本驗證資料未載入，請重試。",
+        "相同停靠資訊的重複卡片合併顯示 " +
           index.duplicateCount +
           " 筆；原始 CSV 均保留。",
         topology
@@ -607,7 +605,7 @@
         (navigator.onLine === false ? "離線中，" : "") +
         "目前無法更新清運資訊，請檢查網路與資料版本後重試。";
       $("filterNotice").textContent =
-        "資料尚未完整取得，無法判定清運星期；這不表示沒有停靠站。";
+        "資料尚未完整取得，無法查詢回收星期；這不表示沒有停靠站。";
       $("retryButton").hidden = false;
       emptyState(
         "目前無法更新清運資訊",
@@ -629,7 +627,7 @@
   function updateTodayLabel() {
     const day = T.taipeiWeekday();
     $("todayLabel").textContent =
-      "台灣時間・星期" + day + "・僅含已提供垃圾日的站點";
+      "台灣時間・星期" + day + "・依已提供的資源回收日篩選";
     return day;
   }
   const extras = createConvenienceUI({
@@ -643,13 +641,13 @@
     },
     onShared: (row) => {
       savedView = false;
+      retiredSearchNotice = "";
       $("district").value = row.searchDistrict;
       updateVillages();
       $("village").value = "";
       $("keyword").value = row.停留地點;
       $("weekday").value = "";
       $("period").value = "";
-      $("dayType").value = "recycle";
       $("sortOrder").value = "asc";
       activeFilters = filters();
       currentMatches = [row];
@@ -726,7 +724,6 @@
     $("village").value = "";
     $("period").value = "";
     $("sortOrder").value = "asc";
-    $("dayType").value = "garbage";
     $("weekday").value = updateTodayLabel();
     updateSuggestions();
     searchTruck();

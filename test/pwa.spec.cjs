@@ -222,13 +222,15 @@ test("a changed CSV without a matching snapshot is rejected even with an install
   );
   await page.reload();
   await expect(page.locator("#searchButton")).toBeEnabled();
-  await expect(page.locator("#dataStatus")).toContainText("部分日期資料未載入");
+  await expect(page.locator("#dataStatus")).toContainText("部分版本驗證資料未載入");
   await page.selectOption("#district", "三民區");
   await page.click("#searchButton");
-  await expect(page.locator("#filterNotice")).toContainText("日期對照表未載入");
-  await expect(
-    page.locator(".day-detail:first-child dd:not(.unknown)"),
-  ).toHaveCount(0);
+  await expect(page.locator("#filterNotice")).toContainText("部分版本驗證資料未載入");
+  await expect(page.locator("#retryButton")).toBeVisible();
+  await expect(page.locator(".map-link")).toHaveCount(0);
+  expect(await page.locator(".day-detail dd:not(.unknown)").count()).toBeGreaterThan(0);
+  const labels = await page.locator(".day-detail dt").allTextContents();
+  expect(labels.every(label => label === "資源回收日")).toBe(true);
 });
 
 test("install guidance and supported install prompts require a deliberate click", async ({

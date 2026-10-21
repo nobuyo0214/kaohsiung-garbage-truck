@@ -44,7 +44,6 @@ test("suggestions and recent searches restore all submitted filters after a relo
       ),
     ).toBe(true);
   await page.fill("#keyword", "河北二路102號");
-  await page.selectOption("#dayType", "garbage");
   await page.selectOption("#weekday", "一");
   await page.selectOption("#period", "afternoon");
   await page.selectOption("#sortOrder", "desc");
@@ -57,7 +56,6 @@ test("suggestions and recent searches restore all submitted filters after a relo
     district: "三民區",
     village: "建東里",
     keyword: "河北二路102號",
-    dayType: "garbage",
     weekday: "一",
     period: "afternoon",
     sortOrder: "desc",
@@ -84,11 +82,11 @@ test("favorites distinguish trips, persist across reload and use current CSV dat
   );
   expect(prefs.favorites[0]).not.toEqual(prefs.favorites[1]);
   expect(prefs).not.toHaveProperty("garbageDay");
-  // A changed date map is a browser-only fixture. No production CSV is edited.
-  const updatedRules = parse("garbage-days.csv").map((rule) =>
-    rule.停留地點 === "更新街與安東街口" ? { ...rule, 一般垃圾日: "三" } : rule,
+  // Changed recycling dates are a browser-only CSV fixture. No production CSV is edited.
+  const updatedRows = parse("sanmin-west.csv").map((row) =>
+    row.停留地點 === "更新街與安東街口" ? { ...row, 回收日: "三" } : row,
   );
-  await mockSnapshot(page, { "garbage-days.csv": Papa.unparse(updatedRules) });
+  await mockSnapshot(page, { "sanmin-west.csv": Papa.unparse(updatedRows) });
   await page.reload();
   await expect(page.locator("#searchButton")).toBeEnabled();
   await page.click("#quickSavedButton");
@@ -105,7 +103,7 @@ test("favorites distinguish trips, persist across reload and use current CSV dat
   await expect(page.locator("#favoriteCount")).toHaveText("1");
 });
 
-test("Taiwan today selects only explicit garbage weekdays and never falls back to recycling", async ({
+test("Taiwan today selects only recorded recycling weekdays and excludes missing recycling dates", async ({
   page,
 }) => {
   // Sunday in Los Angeles, already Monday in Taiwan.
@@ -114,10 +112,11 @@ test("Taiwan today selects only explicit garbage weekdays and never falls back t
   await page.selectOption("#district", "三民區");
   await page.click("#todayButton");
   await expect(page.locator("#weekday")).toHaveValue("一");
-  await expect(page.locator("#dayType")).toHaveValue("garbage");
+  await expect(page.locator("#dayType")).toHaveCount(0);
+  await expect(page.locator(".today-bar")).toContainText("今日資源回收站點");
   const expected = index.search({
     district: "三民區",
-    dayType: "garbage",
+    dayType: "recycle",
     weekday: "一",
   });
   expect(expected.length).toBeGreaterThan(0);
@@ -129,17 +128,14 @@ test("Taiwan today selects only explicit garbage weekdays and never falls back t
   );
   await page.selectOption("#district", "前鎮區");
   await page.click("#todayButton");
-  await expect(page.locator("#dayType")).toHaveValue("garbage");
-  await expect(page.locator(".card")).toHaveCount(0);
-  await expect(page.locator("#filterNotice")).toContainText(
-    "不表示今天沒有垃圾車",
+  const qianzhen = index.search({ district: "前鎮區", dayType: "recycle", weekday: "一" });
+  await expect(page.locator("#resultStatus")).toContainText(
+    "找到 " + qianzhen.length.toLocaleString("zh-TW") + " 筆",
   );
-  await expect(page.locator(".empty-state")).toContainText(
-    "沒有符合的已知垃圾站點",
-  );
+  await expect(page.locator(".day-detail dd.unknown")).toHaveCount(0);
 });
 
-test("copy includes separate dates and unknown labels, with a manual fallback on denied clipboard", async ({
+test("copy includes only recycling and scheduled stop information, with a manual fallback on denied clipboard", async ({
   page,
 }) => {
   await page.addInitScript(() =>
@@ -156,7 +152,7 @@ test("copy includes separate dates and unknown labels, with a manual fallback on
   await page.locator(".copy-button").first().click();
   await expect(page.locator("#toast")).toContainText("已複製");
   const copied = await page.evaluate(() => window.copiedStop);
-  expect(copied).toContain("一般垃圾日：尚未提供");
+  expect(copied).not.toContain("一般垃圾");
   expect(copied).toContain("資源回收日：");
   expect(copied).toContain("停留時間：");
   await page.evaluate(() => {
@@ -193,7 +189,7 @@ test("partial failures retry only failed files, preserve bookmarks and keep the 
   await page.click("#retryButton");
   await expect(page.locator("#dataStatus")).toContainText("39 / 39");
   await expect(page.locator("#dataStatus")).toContainText("13,871");
-  await expect(page.locator("#dataStatus")).toContainText("243 條規則");
+  await expect(page.locator("#dataStatus")).toContainText("資料版本檢查完成");
   await expect(page.locator("#favoriteCount")).toHaveText("1");
   expect(counts.size).toBe(40);
   for (const [name, count] of counts)
