@@ -74,6 +74,7 @@ function createConvenienceUI({
     actions.append(button);
     const record = locationAudit?.byRow.get(row),
       url = LocationQuality.navigationURL(record);
+    let searchNotice = null;
     if (url) {
       const link = node("a", "map-link", "地圖導航 ↗");
       link.href = url;
@@ -85,13 +86,39 @@ function createConvenienceUI({
       );
       actions.append(link);
     } else {
-      const unknown = node("span", "location-unknown", "位置尚待確認");
-      unknown.title = record
+      const searchURL = C.mapSearchURL(row.searchDistrict, row.停留地點);
+      const reason = record
         ? record.reasons.map((k) => LocationQuality.labels[k]).join("；")
         : "位置資料未完整載入";
-      actions.append(unknown);
+      if (searchURL) {
+        const link = node("a", "place-search-link");
+        link.append(
+          node("span", "", "在 Google Maps"),
+          document.createTextNode(" "),
+          node("span", "", "搜尋地點 ↗"),
+        );
+        link.href = searchURL;
+        link.target = "_blank";
+        link.rel = "noopener noreferrer";
+        link.setAttribute(
+          "aria-label",
+          "在 Google Maps 搜尋地點：" + row.停留地點 +
+            "（搜尋結果不代表已核實的停靠位置，另開分頁）",
+        );
+        actions.append(link);
+        searchNotice = node(
+          "p", "location-unknown map-search-note",
+          "位置尚待確認；搜尋結果不代表已核實的停靠位置。",
+        );
+        searchNotice.title = reason;
+      } else {
+        const unknown = node("span", "location-unknown", "位置尚待確認");
+        unknown.title = reason;
+        actions.append(unknown);
+      }
     }
     card.append(actions);
+    if (searchNotice) card.append(searchNotice);
     if (id === shared) {
       card.classList.add("shared-stop");
       card.prepend(node("span", "shared-label", "已定位分享的站點"));

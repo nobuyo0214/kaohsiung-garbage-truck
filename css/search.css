@@ -1134,6 +1134,23 @@ dialog form {
   color: var(--muted);
   text-align: center;
 }
+.stop-actions .place-search-link {
+  flex: 1.7;
+  flex-wrap: wrap;
+  column-gap: 4px;
+  min-width: 0;
+  border-style: dashed;
+  background: transparent;
+  text-align: center;
+}
+.place-search-link span {
+  white-space: nowrap;
+}
+.map-search-note {
+  margin: 7px 0 0;
+  text-align: left;
+  line-height: 1.6;
+}
 .shared-stop {
   border: 2px solid var(--green);
   box-shadow: 0 0 0 4px #dce7d7;

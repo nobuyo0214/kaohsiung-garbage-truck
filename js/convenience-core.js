@@ -26,6 +26,40 @@
       "place",
       "time",
     ];
+    // 大寮區 is already served by rows in sanmin-west.csv (see prepareRows).
+    const districts = new Set([...files.map((f) => f.district), "大寮區"]);
+    // Text search is a convenience link, never coordinate validation or navigation.
+    function mapSearchURL(district, place) {
+      if (
+        typeof district !== "string" ||
+        !districts.has(district) ||
+        typeof place !== "string" ||
+        /[\u0000-\u001f\u007f<>]/.test(place)
+      )
+        return null;
+      const name = D.canonical(place).replace(/\s+/g, " ");
+      if (
+        name.length < 3 ||
+        name.length > 120 ||
+        /(?:https?:|javascript:|data:|www\.|未提供|尚未|待確認|待補|不詳|不明|未知|無資料|未填|某某)/i.test(name)
+      )
+        return null;
+      // Require a named street, a numbered address, or a named public landmark.
+      // Bare "路口", "市場前", "活動中心", coordinates and directions stay unavailable.
+      const specific =
+        /[\p{Script=Han}A-Za-z0-9]{2,}(?:大道|公路|路|街|巷)/u.test(name) ||
+        /\p{Script=Han}+[0-9一二三四五六七八九十百]+(?:[-之][0-9一二三四五六七八九十百]+)*號/u.test(name) ||
+        /[\p{Script=Han}A-Za-z0-9]{2,}(?:國小|國中|高中|大學|市場|公園|活動中心|派出所|分駐所|衛生所|郵局|圖書館|車站|農會|教會|大樓|宿舍|籃球場|隧道|橋|宮|廟|寺|祠)/u.test(name);
+      if (
+        !specific ||
+        /^(?:公有市場|社區活動中心|產業道路)(?:前|旁|附近)?$/.test(name)
+      )
+        return null;
+      const url = new URL("https://www.google.com/maps/search/");
+      url.searchParams.set("api", "1");
+      url.searchParams.set("query", "高雄市 " + district + " " + name);
+      return url.href.length <= 2048 ? url.href : null;
+    }
     function identifier(value) {
       if (
         !Array.isArray(value) ||
@@ -195,6 +229,7 @@
       FORMAT,
       MAX_BYTES,
       fields,
+      mapSearchURL,
       parseId,
       lookup,
       identityIndex,
