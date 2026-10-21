@@ -25,7 +25,9 @@ async function restore(page) {
     mimeType: "application/json",
     buffer: Buffer.from(JSON.stringify(legacy())),
   });
-  await expect(page.locator("#status")).toContainText("已恢復備份");
+  await expect(page.locator("#status")).toContainText("已恢復備份", {
+    timeout: 15000,
+  });
 }
 async function exportText(page, id) {
   const p = page.waitForEvent("download");

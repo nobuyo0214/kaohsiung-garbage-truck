@@ -1,0 +1,12 @@
+{
+  "purpose": "僅作導航座標的保守範圍排除，不是站點位置或清運日期的官方確認",
+  "provider": "內政部國土測繪中心鄉鎮市區界線之社群轉檔",
+  "officialDatasetURL": "https://data.gov.tw/dataset/7441",
+  "mirrorURL": "https://github.com/jason2506/Taiwan.TopoJSON/blob/649946d37f84b1591fe353ddab74858dc8427aad/topojson/towns/towns-64000.json",
+  "mirrorRevision": "649946d37f84b1591fe353ddab74858dc8427aad",
+  "sha256": "5ba138622d5cf7a12aeab87b9a1bc26b090dc59cb6090e9f2400659bcaeea0b7",
+  "acquiredDateTaipei": "2026-10-21",
+  "officialGeometryUpdatedAt": null,
+  "license": "政府資料開放授權條款第1版（原圖資）；保留來源標示",
+  "limitations": "社群提供的簡化轉檔，原圖資有效版本未提供；上游Makefile標示200公尺簡化。距任一行政區簡化邊界不足300公尺時不提供導航；取得日不是官方更新日。"
+}

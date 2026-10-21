@@ -21,7 +21,7 @@ test("real homepage loads all files and searches all 38 districts with paginatio
   const errors = [];
   page.on("pageerror", (e) => errors.push(e.message));
   await page.goto("/");
-  await expect(page.locator("#searchButton")).toBeEnabled();
+  await expect(page.locator("#searchButton")).toBeEnabled({ timeout: 15000 });
   await expect(page.locator("#dataStatus")).toContainText("39 / 39");
   await expect(page.locator("#dataStatus")).toContainText("243 條規則");
   const districts = await page
@@ -73,7 +73,7 @@ test("missing date map and one failed route preserve other districts and usable 
     route.fulfill({ status: 404, body: "missing" }),
   );
   await page.goto("/");
-  await expect(page.locator("#searchButton")).toBeEnabled();
+  await expect(page.locator("#searchButton")).toBeEnabled({ timeout: 15000 });
   await expect(page.locator("#dataStatus")).toContainText("38 / 39");
   await page.selectOption("#district", "大寮區");
   await page.click("#searchButton");

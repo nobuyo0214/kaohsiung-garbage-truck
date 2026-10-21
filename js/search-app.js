@@ -16,6 +16,8 @@
   ];
   const districts = [...$("district").options].map((o) => o.value);
   const loader = createSearchLoader();
+  let dataMeta = null,
+    loadEpoch = 0;
   let truckData = [],
     index = T.createIndex([]),
     loaded = false,
@@ -203,6 +205,7 @@
     $("viewSavedButton").setAttribute("aria-pressed", String(savedView));
     $("favoriteCount").textContent = preferences.favorites.length;
     $("resultsHeading").textContent = savedView ? "我的收藏" : "停靠資訊";
+    extras.updateManager();
   }
   function scrollToResults() {
     if (matchMedia("(max-width: 760px)").matches) {
@@ -213,6 +216,7 @@
   }
   function searchTruck({ remember = true, scroll = true } = {}) {
     if (!loaded) return;
+    extras.clearShared();
     savedView = false;
     activeFilters = filters();
     currentMatches = index.search(activeFilters);
@@ -227,8 +231,20 @@
     if (scroll) scrollToResults();
   }
   function showSaved({ scroll = true } = {}) {
-    if (!loaded) return;
     savedView = true;
+    extras.clearShared();
+    updateViewButtons();
+    if (!loaded) {
+      $("moreButton").hidden = true;
+      $("resultStatus").textContent = "目前無法更新清運資訊；收藏識別仍保留。";
+      emptyState(
+        "目前無法更新清運資訊",
+        "可以匯出或匯入收藏備份；恢復網路後請重試載入。",
+        "重試載入",
+        loadAllData,
+      );
+      return;
+    }
     const keys = new Set(preferences.favorites);
     currentMatches = [...index.districts.values()]
       .flat()
@@ -327,6 +343,7 @@
       });
   }
   async function copyStop(row) {
+    $("copyHeading").textContent = "複製停靠資訊";
     const text = [
       row.searchDistrict + " " + (row.villageName || "村里尚未提供"),
       D.clean(row.停留地點),
@@ -423,6 +440,7 @@
       )
     )
       card.append(element("p", "source", "環境部路線資料整理版本"));
+    extras.decorateCard(card, row);
     return card;
   }
   function showMore() {
@@ -465,6 +483,7 @@
   }
   async function loadAllData() {
     if (loading) return;
+    const epoch = ++loadEpoch;
     loading = true;
     $("searchButton").disabled = true;
     $("todayButton").disabled = true;
@@ -472,10 +491,26 @@
     $("searchButton").textContent = "資料載入中…";
     $("results").setAttribute("aria-busy", "true");
     try {
-      const result = await loader.load(files, D.HEADERS, (count, total) => {
-        $("dataStatus").textContent =
-          "正在讀取停靠資訊… " + count + " / " + total;
-      });
+      if (navigator.onLine === false) throw Error("離線中，無法更新資料");
+      const meta = await SiteData.metadata();
+      if (epoch !== loadEpoch) return;
+      if (dataMeta && dataMeta.dataRevision !== meta.dataRevision)
+        loader.reset();
+      dataMeta = meta;
+      const geometryPromise = SiteData.geometry(meta).catch(() => null);
+      const result = await loader.load(
+        files,
+        D.HEADERS,
+        (count, total) => {
+          if (epoch !== loadEpoch) return;
+          $("dataStatus").textContent =
+            "正在讀取停靠資訊… " + count + " / " + total;
+        },
+        meta.files,
+      );
+      const topology = await geometryPromise;
+      if (epoch !== loadEpoch) return;
+      if (navigator.onLine === false) throw Error("離線中，無法更新資料");
       failedFiles = [];
       truckData = result.routes.flatMap((r, i) => {
         if (r.status === "fulfilled") return D.prepareRows(r.value, files[i]);
@@ -488,6 +523,13 @@
           : { ok: false };
       index = T.createIndex(truckData);
       loaded = truckData.length > 0;
+      extras.updateData({
+        rows: truckData,
+        topology,
+        complete: failedFiles.length === 0 && mapping.ok,
+        meta,
+        loadedAt: loaded ? new Date() : null,
+      });
       $("dataStatus").textContent =
         "已載入 " +
         (files.length - failedFiles.length) +
@@ -517,12 +559,17 @@
         "相同班次、地點、完整時間、村里與兩種星期的重複卡片合併顯示 " +
           index.duplicateCount +
           " 筆；原始 CSV 均保留。",
+        topology
+          ? "導航圖資版本檢查通過。"
+          : "位置圖資未能載入或版本不符，暫不提供導航；可重試。",
       ].join(" ");
-      $("retryButton").hidden = !failedFiles.length && mapping.ok;
+      $("retryButton").hidden = !failedFiles.length && mapping.ok && !!topology;
       updateVillages();
       renderRecent();
       if (loaded) {
-        if (savedView) showSaved({ scroll: false });
+        if (extras.resolveShared()) {
+          /* A share failure must not silently show another stop. */
+        } else if (savedView) showSaved({ scroll: false });
         else if (activeFilters) {
           // Re-run the last submitted search, without overwriting any draft edits.
           currentMatches = index.search(activeFilters);
@@ -542,10 +589,28 @@
         );
       }
     } catch {
-      $("dataStatus").textContent = "資料載入失敗，請檢查網路後重試。";
+      if (epoch !== loadEpoch) return;
+      loaded = false;
+      truckData = [];
+      index = T.createIndex([]);
+      currentMatches = [];
+      $("moreButton").hidden = true;
+      loader.reset();
+      extras.updateData({
+        rows: [],
+        topology: null,
+        complete: false,
+        meta: dataMeta,
+        loadedAt: null,
+      });
+      $("dataStatus").textContent =
+        (navigator.onLine === false ? "離線中，" : "") +
+        "目前無法更新清運資訊，請檢查網路與資料版本後重試。";
+      $("filterNotice").textContent =
+        "資料尚未完整取得，無法判定清運星期；這不表示沒有停靠站。";
       $("retryButton").hidden = false;
       emptyState(
-        "暫時無法載入停靠資訊",
+        "目前無法更新清運資訊",
         "請重試載入，或重新整理頁面。",
         "重試載入",
         loadAllData,
@@ -556,8 +621,8 @@
       $("searchButton").textContent = loaded ? "搜尋垃圾車" : "資料尚未載入";
       $("todayButton").disabled = !loaded;
       $("retryButton").disabled = false;
-      $("viewSavedButton").disabled = !loaded;
-      $("quickSavedButton").disabled = !loaded;
+      $("viewSavedButton").disabled = false;
+      $("quickSavedButton").disabled = false;
       $("results").setAttribute("aria-busy", "false");
     }
   }
@@ -567,6 +632,73 @@
       "台灣時間・星期" + day + "・僅含已提供垃圾日的站點";
     return day;
   }
+  const extras = createConvenienceUI({
+    getState: () => ({ rows: truckData, loaded, savedView, preferences }),
+    toast,
+    setFavorites: (favorites) => {
+      preferences.favorites = favorites;
+      persist();
+      updateViewButtons();
+      if (savedView) showSaved({ scroll: false });
+    },
+    onShared: (row) => {
+      savedView = false;
+      $("district").value = row.searchDistrict;
+      updateVillages();
+      $("village").value = "";
+      $("keyword").value = row.停留地點;
+      $("weekday").value = "";
+      $("period").value = "";
+      $("dayType").value = "recycle";
+      $("sortOrder").value = "asc";
+      activeFilters = filters();
+      currentMatches = [row];
+      updateViewButtons();
+      updateDayNotice();
+      renderMatches();
+    },
+    onShareError: (message) => {
+      savedView = false;
+      currentMatches = [];
+      $("moreButton").hidden = true;
+      updateViewButtons();
+      $("resultStatus").textContent = "站點資料可能已變更。";
+      emptyState("站點資料可能已變更", message, "回到一般查詢", () =>
+        searchTruck({ remember: false }),
+      );
+    },
+  });
+  window.addEventListener("offline", () => {
+    loadEpoch++;
+    loader.reset();
+    loaded = false;
+    truckData = [];
+    index = T.createIndex([]);
+    currentMatches = [];
+    $("searchButton").disabled = true;
+    $("todayButton").disabled = true;
+    $("moreButton").hidden = true;
+    $("dataStatus").textContent = "離線中，目前無法更新清運資訊。";
+    $("filterNotice").textContent =
+      "目前無法更新清運資訊；不顯示離線舊日期，收藏備份仍可管理。";
+    $("retryButton").hidden = false;
+    extras.updateData({
+      rows: [],
+      topology: null,
+      complete: false,
+      meta: dataMeta,
+      loadedAt: null,
+    });
+    emptyState(
+      "目前無法更新清運資訊",
+      "請恢復網路後重試。本站只快取網站介面，不提供離線清運資料。",
+      "重試載入",
+      loadAllData,
+    );
+  });
+  window.addEventListener("online", () => {
+    if (!loading) loadAllData();
+  });
   $("searchForm").addEventListener("submit", (e) => {
     e.preventDefault();
     searchTruck();

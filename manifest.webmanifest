@@ -1,0 +1,32 @@
+{
+  "id": "./",
+  "name": "高雄市垃圾車查詢系統",
+  "short_name": "高雄垃圾車",
+  "description": "查詢高雄38區的表定垃圾車停靠資訊，收藏與分享常用站點。",
+  "lang": "zh-Hant-TW",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f3f5ee",
+  "theme_color": "#1c6149",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icons/maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    }
+  ]
+}
