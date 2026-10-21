@@ -30,6 +30,7 @@
     mapping = { ok: false },
     preferences = { favorites: [], recent: [] };
   let toastTimer, suggestionTimer;
+  const citySuggestions = new Map();
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -72,14 +73,18 @@
     toast("此瀏覽器暫時無法讀取搜尋紀錄，仍可正常查詢。");
   }
 
+  preferences.favoriteDetails = T.cleanFavoriteDetails(preferences.favorites, preferences.favoriteDetails);
+
   function persist() {
     try {
       localStorage.setItem(
         "garbage-search-v1",
         JSON.stringify({ version: 1, ...preferences }),
       );
+      return true;
     } catch {
       toast("無法保存至此瀏覽器；目前操作仍有效，關閉頁面後可能遺失。");
+      return false;
     }
   }
   function filters() {
@@ -89,7 +94,7 @@
     };
   }
   function searchDescription(f) {
-    const parts = [f.district, f.village, D.clean(f.keyword)];
+    const parts = [f.district === T.ALL_DISTRICTS ? "全高雄市" : f.district, f.village, D.clean(f.keyword)];
     if (f.weekday)
       parts.push(
         f.dayType === "garbage" ? "舊星期條件已停用" : "回收・週" + f.weekday,
@@ -126,6 +131,7 @@
         const notice = retired
           ? "舊搜尋的星期條件已不再提供，未套用原星期。其他條件已保留；請重新選擇資源回收星期。"
           : "";
+        updateSuggestions();
         searchTruck({ remember: !retired, scroll: !retired, notice });
         if (retired) {
           $("advancedFilters").open = true;
@@ -138,6 +144,16 @@
   }
   function updateSuggestions() {
     clearTimeout(suggestionTimer);
+    citySuggestions.clear();
+    if ($("district").value === T.ALL_DISTRICTS) {
+      $("keywordSuggestions").replaceChildren(...index.suggestStops($("keyword").value).map(stop => {
+        citySuggestions.set(stop.label, stop);
+        const option = element("option");
+        option.value = stop.label;
+        return option;
+      }));
+      return;
+    }
     $("keywordSuggestions").replaceChildren(
       ...index
         .suggest($("district").value, $("village").value, $("keyword").value)
@@ -148,7 +164,23 @@
         }),
     );
   }
+  function useCitySuggestion() {
+    if ($("district").value !== T.ALL_DISTRICTS) return false;
+    const stop = citySuggestions.get($("keyword").value);
+    if (!stop) return false;
+    $("district").value = stop.district;
+    $("keyword").value = stop.place;
+    $("village").value = "";
+    updateVillages();
+    return true;
+  }
   function updateVillages() {
+    const city = $("district").value === T.ALL_DISTRICTS;
+    $("village").closest(".field").hidden = city;
+    $("district").closest(".field").classList.toggle("full", city);
+    $("keywordHint").textContent = city
+      ? "搜尋全市38區；建議會標示行政區，點選後切換至該區。"
+      : "輸入地點可看本區站點建議，也可留空查看全區。";
     const previous = $("village").value;
     const villages = [
       ...new Set(
@@ -157,7 +189,7 @@
           .filter(Boolean),
       ),
     ].sort((a, b) => a.localeCompare(b, "zh-Hant"));
-    const all = element("option", "", "全部村里");
+    const all = element("option", "", $("district").value === T.ALL_DISTRICTS ? "全市搜尋不需選村里" : "全部村里");
     all.value = "";
     $("village").replaceChildren(
       all,
@@ -175,7 +207,7 @@
     return files.some(
       (f) =>
         f.name === name &&
-        (f.district === district ||
+        (district === T.ALL_DISTRICTS || f.district === district ||
           (district === "大寮區" && name === "sanmin-west.csv")),
     );
   }
@@ -189,7 +221,7 @@
         "收藏顯示所有行政區，未套用左側篩選；資源回收日依當次載入資料顯示。",
       );
     else {
-      const rows = index.districts.get(district) || [],
+      const rows = district === T.ALL_DISTRICTS ? index.search({ district }) : index.districts.get(district) || [],
         known = rows.filter((r) => D.clean(r.recycleDay)).length;
       if (!known && activeFilters?.weekday)
         messages.push(
@@ -200,7 +232,7 @@
           "星期篩選僅包含已提供對應資源回收日的站點。",
         );
       if (failedFiles.some((name) => affectsDistrict(name, district)))
-        messages.push("本區部分路線尚未載入，搜尋結果可能不完整，請重試載入。");
+        messages.push(district === T.ALL_DISTRICTS ? "全市部分路線尚未載入，搜尋結果不完整；未找到不代表沒有該地點，請重試載入。" : "本區部分路線尚未載入，搜尋結果可能不完整，請重試載入。");
     }
     if (!mapping.ok && loaded)
       messages.push(
@@ -224,6 +256,7 @@
   }
   function searchTruck({ remember = true, scroll = true, notice = "" } = {}) {
     if (!loaded) return;
+    useCitySuggestion();
     extras.clearShared();
     savedView = false;
     retiredSearchNotice = notice;
@@ -260,7 +293,9 @@
       .flat()
       .filter((r) => keys.has(T.stopId(r)));
     currentMatches.sort(
-      (a, b) => (a.startMinute ?? Infinity) - (b.startMinute ?? Infinity),
+      (a, b) => Number(Convenience.favoriteDetail(preferences.favoriteDetails, T.stopId(b)).pinned) -
+        Number(Convenience.favoriteDetail(preferences.favoriteDetails, T.stopId(a)).pinned) ||
+        (a.startMinute ?? Infinity) - (b.startMinute ?? Infinity),
     );
     updateViewButtons();
     updateDayNotice();
@@ -305,14 +340,14 @@
         emptyState(
           "沒有符合的資源回收站點",
           "請改選回收星期、街道或時段；未提供回收日的站點不會列入星期篩選。這不表示沒有垃圾車。",
-          "清除條件，查看本區",
+          "清除搜尋條件",
           resetFilters,
         );
       else
         emptyState(
           "這次沒有找到停靠站",
           "試試較短的街道名稱、其他村里，或清除星期與時段。資料未載入時，請先重試。",
-          "清除條件，查看本區",
+          "清除搜尋條件",
           resetFilters,
         );
       return;
@@ -342,6 +377,7 @@
     preferences.favorites = saved
       ? preferences.favorites.filter((key) => key !== id)
       : [...preferences.favorites, id];
+    preferences.favoriteDetails = T.cleanFavoriteDetails(preferences.favorites, preferences.favoriteDetails);
     persist();
     updateViewButtons();
     if (savedView) {
@@ -633,11 +669,13 @@
   const extras = createConvenienceUI({
     getState: () => ({ rows: truckData, loaded, savedView, preferences }),
     toast,
-    setFavorites: (favorites) => {
+    setFavorites: (favorites, details = preferences.favoriteDetails) => {
       preferences.favorites = favorites;
-      persist();
+      preferences.favoriteDetails = T.cleanFavoriteDetails(favorites, details);
+      const stored = persist();
       updateViewButtons();
       if (savedView) showSaved({ scroll: false });
+      return stored;
     },
     onShared: (row) => {
       savedView = false;
@@ -704,10 +742,11 @@
   $("district").addEventListener("change", () => {
     $("village").value = "";
     updateVillages();
-    resetFilters();
+    searchTruck({ remember: false, scroll: false });
   });
   $("village").addEventListener("change", updateSuggestions);
   $("keyword").addEventListener("input", () => {
+    if (useCitySuggestion()) return;
     clearTimeout(suggestionTimer);
     suggestionTimer = setTimeout(updateSuggestions, 100);
   });

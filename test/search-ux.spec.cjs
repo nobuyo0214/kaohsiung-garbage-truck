@@ -88,7 +88,8 @@ test("favorites distinguish trips, persist across reload and use current CSV dat
   );
   await mockSnapshot(page, { "sanmin-west.csv": Papa.unparse(updatedRows) });
   await page.reload();
-  await expect(page.locator("#searchButton")).toBeEnabled();
+  // Reload verifies all 39 files again; match the initial ready() deadline.
+  await expect(page.locator("#searchButton")).toBeEnabled({ timeout: 15000 });
   await page.click("#quickSavedButton");
   await expect(page.locator(".card")).toHaveCount(2);
   await expect(page.locator("#filterNotice")).toContainText("所有行政區");

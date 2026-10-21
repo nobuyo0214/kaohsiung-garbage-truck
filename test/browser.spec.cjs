@@ -27,7 +27,7 @@ test("real homepage loads all files and searches all 38 districts with paginatio
   await expect(page.locator("#dayType")).toHaveCount(0);
   const districts = await page
     .locator("#district option")
-    .evaluateAll((options) => options.map((o) => o.value));
+    .evaluateAll((options) => options.map((o) => o.value).filter(value => value !== "all"));
   expect(districts).toHaveLength(38);
   for (const district of districts) {
     await page.selectOption("#district", district);

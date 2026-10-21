@@ -1244,3 +1244,78 @@ dialog form {
   border-radius: 10px;
   padding: 10px 14px;
 }
+
+/* One responsive interface, with an optional readable text scale. No page zoom. */
+.site-header { flex-wrap: wrap; gap: 12px; }
+.header-controls { flex-wrap: wrap; gap: 10px; }
+.large-text-button {
+  border: 1px solid #b9cfbd;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 0.875rem;
+  color: var(--green);
+  background: var(--paper);
+}
+.large-text-button[aria-pressed="true"] { background: var(--green); color: white; }
+dialog { max-height: 85dvh; overflow-y: auto; overflow-wrap: anywhere; }
+.large-text body { font-size: 1.25rem; line-height: 1.75; }
+.large-text .brand { font-size: 1.375rem; }
+.large-text .brand-caption { font-size: 0.875rem; }
+.large-text .hero-description { font-size: 1.25rem; max-width: none; }
+.large-text .route-art { display: none; }
+.large-text .form-grid { grid-template-columns: minmax(0, 1fr); gap: 18px; }
+.large-text :is(input, select, textarea),
+.large-text .secondary-filters select { font-size: 1.25rem; padding: 12px; }
+.large-text :is(button, .stop-actions a, summary) {
+  min-width: 44px; min-height: 48px; font-size: 1.125rem;
+}
+.large-text :is(label, .secondary-filters label, .panel-heading h2) { font-size: 1.25rem; }
+.large-text :is(.hint, .day-notice, .filter-notice, .location-meta, .time-caption,
+  .source, .shared-label, .schedule-label, .context-label, .results-summary,
+  .location-unknown, .recent-section, .recent-section button, .filter-divider,
+  .data-health, .data-health summary, .data-health p, .source-info, .install-info,
+  .favorites-manager p, .toast, dialog p, .empty-state p, .site-footer, .site-footer strong) {
+  font-size: 1.062rem; line-height: 1.7;
+}
+.large-text #results { grid-template-columns: minmax(0, 1fr); }
+.large-text .card h3 { font-size: 1.625rem; }
+.large-text .stop-time { font-size: 2.125rem; line-height: 1.5; }
+.large-text .stop-time.invalid { font-size: 1.375rem; }
+.large-text .day-detail { font-size: 1.25rem; grid-template-columns: minmax(0, 1fr); gap: 2px; }
+.large-text :is(.card-topline, .card-actions, .stop-actions, .results-topline,
+  .results-summary, .today-bar, .button-row, .app-update) { flex-wrap: wrap; gap: 12px; }
+.large-text .button-row { flex-direction: column; align-items: stretch; }
+.large-text .card-topline { align-items: flex-start; }
+.large-text .stop-actions > * { flex: 1 1 160px; }
+.large-text .stop-actions .place-search-link { flex: 1 1 200px; }
+.large-text .today-bar > div { font-size: 1.125rem; }
+.large-text .today-bar small { font-size: 1rem; }
+.large-text .context-label { max-width: none; white-space: normal; overflow-wrap: anywhere; }
+.large-text .search-panel { position: static; }
+.large-text .site-footer { flex-wrap: wrap; }
+@media (min-width: 1100px) {
+  .large-text .workspace { grid-template-columns: 380px minmax(0, 1fr); }
+}
+@media (max-width: 760px) {
+  .large-text .hero h1 { font-size: 2.125rem; }
+  .large-text .header-controls { width: 100%; justify-content: space-between; }
+  .large-text .view-switch { display: flex; flex-wrap: wrap; }
+  .large-text dialog { padding: 18px; }
+}
+
+.favorite-label { color: var(--green); background: var(--soft); border-radius: 6px; padding: 6px 10px; margin: 0 0 10px; font-size: 0.875rem; overflow-wrap: anywhere; }
+.favorite-tools { margin-top: 10px; }
+.favorite-edit { color: var(--green); min-height: 44px; padding: 6px 10px; border: 1px solid var(--line); border-radius: 7px; font-size: 0.8125rem; }
+.dialog-fields { display: grid; gap: 14px; justify-content: stretch; }
+.check-label { display: flex; align-items: center; gap: 10px; min-height: 44px; margin: 0; cursor: pointer; }
+.check-label input { width: 24px; height: 24px; min-height: 24px; min-width: 24px; flex-shrink: 0; accent-color: var(--green); }
+#favoriteEditStatus { color: var(--warning); margin: 0; }
+.large-text .favorite-label { font-size: 1.25rem; }
+.large-text .check-label input { padding: 0; }
+
+.card-actions { justify-content: space-between; flex-wrap: wrap; }
+.report-button { font-size: 0.75rem; color: var(--muted); text-decoration: underline; text-underline-offset: 3px; min-height: 44px; padding: 5px 2px; }
+#reportStatus { color: var(--warning); margin: 0; }
+.dialog-fields > div { min-width: 0; }
+/* Grid items must be allowed to shrink when browser text settings grow. */
+.large-text .workspace > * { min-width: 0; }
