@@ -647,6 +647,7 @@ details[open] > .filter-divider .filter-toggle::after {
   overflow-wrap: anywhere;
 }
 .day-detail .unknown {
+  grid-column: 1 / -1;
   font-weight: 400;
   color: var(--muted);
 }
@@ -656,7 +657,7 @@ details[open] > .filter-divider .filter-toggle::after {
 .card-actions {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-end;
   gap: 8px;
   margin-top: 12px;
   padding-top: 10px;

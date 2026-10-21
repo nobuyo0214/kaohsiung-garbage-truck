@@ -23,7 +23,8 @@ test("real homepage loads all files and searches all 38 districts with paginatio
   await page.goto("/");
   await expect(page.locator("#searchButton")).toBeEnabled({ timeout: 15000 });
   await expect(page.locator("#dataStatus")).toContainText("39 / 39");
-  await expect(page.locator("#dataStatus")).toContainText("243 條規則");
+  await expect(page.locator("#dataStatus")).toContainText("資料版本檢查完成");
+  await expect(page.locator("#dayType")).toHaveCount(0);
   const districts = await page
     .locator("#district option")
     .evaluateAll((options) => options.map((o) => o.value));
@@ -44,9 +45,8 @@ test("real homepage loads all files and searches all 38 districts with paginatio
   await page.fill("#keyword", "河北二路102號");
   await page.click("#searchButton");
   await expect(page.locator(".card")).toHaveCount(1);
-  await expect(page.locator(".card")).toContainText("一、二、四、五、六");
+  await expect(page.locator(".day-detail dd")).toHaveText("一、四");
   await page.selectOption("#village", "建東里");
-  await page.selectOption("#dayType", "garbage");
   await page.selectOption("#weekday", "三");
   await page.click("#searchButton");
   await expect(page.locator(".card")).toHaveCount(0);

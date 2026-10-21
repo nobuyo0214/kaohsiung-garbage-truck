@@ -280,7 +280,7 @@ test("data information keeps official/import dates unknown and load/version time
   );
   await expect(page.locator("#siteSnapshot")).toContainText("非官方更新日");
   await expect(page.locator("#currentLoadedAt")).toContainText("台灣時間");
-  await expect(page.locator("#sourceInfo")).toContainText("非即時 GPS");
+  await expect(page.locator("#sourceInfo")).toContainText("非即時車輛定位");
 });
 
 for (const width of [320, 390, 768])
