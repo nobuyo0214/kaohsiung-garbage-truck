@@ -1,4 +1,4 @@
-/* Sharing and backups contain identifiers only: no dates, coordinates or search history. */
+/* Sharing contains identifiers only. Backups may include private names/pins, never dates or coordinates. */
 (function (root, factory) {
   if (typeof module === "object" && module.exports)
     module.exports = factory(
@@ -215,6 +215,82 @@
         throw Error("合併後超過200筆，請先取消部分收藏；目前收藏未變更");
       return result;
     }
+    // Version 2 backups extend identifiers with private display preferences only.
+    function exportFavoriteBackup(ids, details) {
+      const legacy = exportFavorites(ids), clean = T.cleanFavoriteDetails(ids, details);
+      return {
+        ...legacy, version: 2,
+        favorites: legacy.favorites.map(row => {
+          const id = identifier(fields.map(k => row[k]));
+          return { ...row, ...favoriteDetail(clean, id) };
+        }),
+      };
+    }
+    function favoriteDetail(details, id) {
+      return details?.version === 1 && Object.hasOwn(details.entries || {}, id)
+        ? details.entries[id] : { name: "", pinned: false };
+    }
+    function parseFavoriteBackup(text, byteLength = new TextEncoder().encode(text).length) {
+      if (byteLength > MAX_BYTES || new TextEncoder().encode(text).length > MAX_BYTES)
+        throw Error("檔案超過256KB，未變更收藏");
+      let data;
+      try { data = JSON.parse(text); }
+      catch { throw Error("不是有效的JSON檔案，未變更收藏"); }
+      if (data?.version === 1) return {
+        favorites: importFavorites(text, byteLength),
+        favoriteDetails: { version: 1, entries: {} },
+      };
+      if (!data || Array.isArray(data) || data.format !== FORMAT || data.version !== 2 ||
+          Object.keys(data).some(k => !["format", "version", "favorites"].includes(k)))
+        throw Error("收藏備份格式或版本不相容，未變更收藏");
+      if (!Array.isArray(data.favorites) || data.favorites.length > 200)
+        throw Error("收藏清單格式錯誤或超過200筆，未變更收藏");
+      const entries = new Map();
+      for (const row of data.favorites) {
+        if (!row || Array.isArray(row) || Object.keys(row).length !== fields.length + 2 ||
+            ![...fields, "name", "pinned"].every(k => Object.hasOwn(row, k)) ||
+            !T.validFavoriteDetail(row))
+          throw Error("收藏名稱、置頂或識別欄位不正確，未變更收藏");
+        const id = identifier(fields.map(k => row[k])), detail = { name: row.name, pinned: row.pinned };
+        if (entries.has(id) && JSON.stringify(entries.get(id)) !== JSON.stringify(detail))
+          throw Error("檔案內同一收藏有衝突設定，未變更收藏");
+        entries.set(id, detail);
+      }
+      return { favorites: [...entries.keys()], favoriteDetails: { version: 1, entries: Object.fromEntries(entries) } };
+    }
+    function mergeFavoriteState(current, incoming) {
+      const favorites = mergeFavorites(current.favorites, incoming.favorites),
+        local = T.cleanFavoriteDetails(current.favorites, current.favoriteDetails),
+        remote = T.cleanFavoriteDetails(incoming.favorites, incoming.favoriteDetails),
+        existing = new Set(current.favorites);
+      // Existing entries win even when their local name is empty or not pinned.
+      return { favorites, favoriteDetails: { version: 1, entries: Object.fromEntries(
+        favorites.map(id => [id, favoriteDetail(existing.has(id) ? local : remote, id)])
+      ) } };
+    }
+    const reportTypes = Object.freeze({
+      place: "停靠地點可能錯誤", time: "表定時間可能錯誤",
+      recycling: "資源回收日可能錯誤", map: "地圖位置可能錯誤", other: "其他問題",
+    });
+    function reportText(row, type, note = "") {
+      if (!Object.hasOwn(reportTypes, type) || typeof note !== "string" ||
+          [...note].length > 300 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(note))
+        throw Error("請選擇問題類型；補充說明最多300個字元，不能包含控制字元。");
+      const id = T.stopId(row), values = JSON.parse(id),
+        labels = ["來源CSV", "行政區", "責任區", "車次", "正式停靠地點", "表定時間（完整識別）"];
+      return [
+        "高雄市垃圾車停靠資訊問題回報（尚未送出）",
+        "問題類型：" + reportTypes[type],
+        ...values.map((value, i) => labels[i] + "：" + (value || "尚未提供")),
+        "村里：" + (D.clean(row.villageName) || "尚未提供"),
+        "來源表定時間原文：" + (D.clean(row.停留時間) || "尚未提供"),
+        "資源回收日：" + (D.clean(row.recycleDay) || "尚未提供"),
+        "完整站點識別：" + id,
+        "補充說明：" + (note.trim() || "未補充"),
+        "此為表定資訊問題，非即時定位。請勿填入不必要的個人資料。",
+        "複製文字不代表已送出、受理或更正資料。",
+      ].join("\n");
+    }
     function unresolved(ids, rows) {
       return ids.filter((id) => {
         const values = JSON.parse(parseId(id));
@@ -226,6 +302,12 @@
       });
     }
     return {
+      reportText,
+      reportTypes,
+      exportFavoriteBackup,
+      parseFavoriteBackup,
+      favoriteDetail,
+      mergeFavoriteState,
       FORMAT,
       MAX_BYTES,
       fields,

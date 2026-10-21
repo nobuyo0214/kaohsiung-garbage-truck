@@ -5,6 +5,7 @@
   else root.SearchTools = factory(root.GarbageData);
 })(typeof globalThis !== "undefined" ? globalThis : this, function (D) {
   "use strict";
+  const ALL_DISTRICTS = "all";
   const defaults = {
     district: "",
     village: "",
@@ -70,14 +71,23 @@
         ),
       );
     }
+    // Global buckets reference the existing rows; CSVs and normalized text are not copied.
+    const city = [...districts.values()].flat();
+    const byTime = (direction) => (a, b) =>
+      a.startMinute === null ? (b.startMinute === null ? 0 : 1) :
+      b.startMinute === null ? -1 : direction * (a.startMinute - b.startMinute);
+    city.sort(byTime(1));
+    const cityDescending = [...city].sort(byTime(-1));
     function search(filters) {
       const f = { ...defaults, ...filters },
         keyword = D.normalize(f.keyword);
       const bucket =
-        (f.sortOrder === "desc" ? descending : districts).get(f.district) || [];
+        f.district === ALL_DISTRICTS
+          ? (f.sortOrder === "desc" ? cityDescending : city)
+          : (f.sortOrder === "desc" ? descending : districts).get(f.district) || [];
       return bucket.filter(
         (r) =>
-          (!f.village || r.villageName === f.village) &&
+          (f.district === ALL_DISTRICTS || !f.village || r.villageName === f.village) &&
           (!keyword || text.get(r).includes(keyword)) &&
           D.matchesWeekday(
             f.dayType === "garbage" ? r.garbageDay : r.recycleDay,
@@ -100,8 +110,23 @@
       }
       return [...places];
     }
+    function suggestStops(value, limit = 8) {
+      const keyword = D.normalize(value), result = [], seen = new Set();
+      if (!keyword) return result;
+      for (const row of city) {
+        const place = D.clean(row.停留地點), district = row.searchDistrict,
+          label = district + "｜" + place;
+        if (text.get(row).includes(keyword) && !seen.has(label)) {
+          result.push({ district, place, label });
+          seen.add(label);
+          if (result.length >= limit) break;
+        }
+      }
+      return result;
+    }
     return {
       districts,
+      suggestStops,
       search,
       suggest,
       occurrences,
@@ -139,7 +164,7 @@
       !!value &&
       typeof value === "object" &&
       !Array.isArray(value) &&
-      districts.includes(value.district) &&
+      (value.district === ALL_DISTRICTS || districts.includes(value.district)) &&
       typeof value.village === "string" &&
       value.village.length <= 100 &&
       typeof value.keyword === "string" &&
@@ -175,10 +200,22 @@
       return false;
     }
   }
+  function validFavoriteDetail(detail) {
+    return !!detail && typeof detail.name === "string" &&
+      [...detail.name].length <= 30 && !/[\u0000-\u001f\u007f]/.test(detail.name) &&
+      typeof detail.pinned === "boolean";
+  }
+  function cleanFavoriteDetails(favorites, details) {
+    const entries = details?.version === 1 && details.entries &&
+      typeof details.entries === "object" && !Array.isArray(details.entries) ? details.entries : {};
+    return { version: 1, entries: Object.fromEntries(favorites.filter(id =>
+      Object.hasOwn(entries, id) && validFavoriteDetail(entries[id])
+    ).map(id => [id, { name: entries[id].name, pinned: entries[id].pinned }])) };
+  }
   function readPreferences(storage, districts) {
     const value = JSON.parse(storage.getItem("garbage-search-v1") || "null");
     if (!value || value.version !== 1) return { favorites: [], recent: [] };
-    return {
+    const result = {
       favorites: Array.isArray(value.favorites)
         ? [...new Set(value.favorites.filter(validStopId))].slice(0, 200)
         : [],
@@ -194,8 +231,14 @@
             .slice(0, 6)
         : [],
     };
+    if (value.favoriteDetails?.version === 1)
+      result.favoriteDetails = cleanFavoriteDetails(result.favorites, value.favoriteDetails);
+    return result;
   }
   return {
+    validFavoriteDetail,
+    cleanFavoriteDetails,
+    ALL_DISTRICTS,
     createIndex,
     stopId,
     taipeiWeekday,

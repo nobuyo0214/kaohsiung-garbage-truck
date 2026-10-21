@@ -13,6 +13,8 @@ function createConvenienceUI({
   let locationAudit = null,
     shared = null,
     pendingImport = null,
+    editingFavorite = null,
+    reportingRow = null,
     identities = new Map();
   function node(tag, className, text) {
     const el = document.createElement(tag);
@@ -20,6 +22,25 @@ function createConvenienceUI({
     if (text !== undefined) el.textContent = text;
     return el;
   }
+  // A separate versioned display preference cannot overwrite search or favorites.
+  function applyLargeText(enabled) {
+    document.documentElement.classList.toggle("large-text", enabled);
+    $("largeTextButton").setAttribute("aria-pressed", String(enabled));
+    $("largeTextButton").textContent = enabled ? "大字模式：開" : "大字模式";
+  }
+  try {
+    const display = JSON.parse(localStorage.getItem("garbage-display-v1") || "null");
+    applyLargeText(display?.version === 1 && display.largeText === true);
+  } catch { /* Search remains usable if display preferences cannot be read. */ }
+  $("largeTextButton").addEventListener("click", () => {
+    const enabled = !document.documentElement.classList.contains("large-text");
+    applyLargeText(enabled);
+    try {
+      localStorage.setItem("garbage-display-v1", JSON.stringify({ version: 1, largeText: enabled }));
+    } catch {
+      toast("無法保存大字模式偏好，本次仍可使用；下次開啟可能需重新設定。");
+    }
+  });
   function manualCopy(text, title) {
     $("copyHeading").textContent = title;
     $("copyText").value = text;
@@ -58,6 +79,77 @@ function createConvenienceUI({
     }
     await copyURL(url);
   }
+  function editFavorite(row) {
+    const id = T.stopId(row), detail = C.favoriteDetail(getState().preferences.favoriteDetails, id);
+    editingFavorite = id;
+    $("favoriteOfficialPlace").textContent = "正式地點：" + row.searchDistrict + "・" + row.停留地點 + " " + row.停留時間;
+    $("favoriteName").value = detail.name;
+    $("favoritePinned").checked = detail.pinned;
+    $("favoriteEditStatus").textContent = "";
+    $("favoriteDialog").showModal();
+    $("favoriteName").focus();
+  }
+  $("favoriteForm").addEventListener("submit", event => {
+    event.preventDefault();
+    const current = getState().preferences, detail = {
+      name: $("favoriteName").value.trim(), pinned: $("favoritePinned").checked,
+    };
+    if (!T.validFavoriteDetail(detail)) {
+      $("favoriteEditStatus").textContent = "名稱最多30個字元，不能包含控制字元。";
+      return;
+    }
+    if (!editingFavorite || !current.favorites.includes(editingFavorite)) {
+      $("favoriteEditStatus").textContent = "此站點已不在收藏中，未變更設定。";
+      return;
+    }
+    const details = T.cleanFavoriteDetails(current.favorites, current.favoriteDetails);
+    details.entries[editingFavorite] = detail;
+    const stored = setFavorites(current.favorites, details);
+    $("favoriteDialog").close();
+    // The saved list was re-rendered (and may have moved after pinning).
+    const control = [...document.querySelectorAll(".favorite-edit")].find(button => button.dataset.stopId === editingFavorite);
+    (control || $("viewSavedButton")).focus({ preventScroll: true });
+    if (stored) toast("已儲存收藏設定。");
+  });
+  $("cancelFavoriteEdit").addEventListener("click", () => $("favoriteDialog").close());
+  function refreshReport() {
+    try {
+      $("reportText").value = C.reportText(reportingRow, $("reportType").value, $("reportNote").value);
+      $("reportStatus").textContent = "尚未送出。";
+      $("copyReport").disabled = false;
+    } catch (error) {
+      $("reportText").value = "";
+      $("reportStatus").textContent = error.message;
+      $("copyReport").disabled = true;
+    }
+  }
+  function openReport(row) {
+    reportingRow = row;
+    $("reportType").value = "place";
+    $("reportNote").value = "";
+    $("reportPreview").open = false;
+    refreshReport();
+    $("reportDialog").showModal();
+    $("reportType").focus();
+  }
+  $("reportType").addEventListener("change", refreshReport);
+  $("reportNote").addEventListener("input", refreshReport);
+  $("closeReport").addEventListener("click", () => $("reportDialog").close());
+  $("reportDialog").addEventListener("close", () => { reportingRow = null; });
+  $("copyReport").addEventListener("click", async () => {
+    const text = $("reportText").value;
+    if (!text) return;
+    try {
+      if (!navigator.clipboard?.writeText) throw Error("clipboard unavailable");
+      await navigator.clipboard.writeText(text);
+      $("reportStatus").textContent = "已複製回報內容，尚未送出；請自行交給維護者或主管機關。";
+    } catch {
+      $("reportPreview").open = true;
+      $("reportText").focus();
+      $("reportText").select();
+      $("reportStatus").textContent = "無法自動複製，請長按或選取下方回報文字手動複製；尚未送出。";
+    }
+  });
   function decorateCard(card, row) {
     const actions = node("div", "stop-actions"),
       id = T.stopId(row),
@@ -72,6 +164,11 @@ function createConvenienceUI({
     if (button.disabled) button.title = "完整識別不足或有歧義，請使用複製資訊";
     button.addEventListener("click", () => share(row));
     actions.append(button);
+    const report = node("button", "report-button", "回報問題");
+    report.type = "button";
+    report.setAttribute("aria-label", "回報問題：" + row.停留地點 + " " + row.停留時間);
+    report.addEventListener("click", () => openReport(row));
+    card.querySelector(".card-actions").prepend(report);
     const record = locationAudit?.byRow.get(row),
       url = LocationQuality.navigationURL(record);
     let searchNotice = null;
@@ -116,6 +213,21 @@ function createConvenienceUI({
         unknown.title = reason;
         actions.append(unknown);
       }
+    }
+    if (state.savedView) {
+      const detail = C.favoriteDetail(state.preferences.favoriteDetails, id),
+        tools = node("div", "favorite-tools"), edit = node("button", "favorite-edit", "名稱與置頂");
+      if (detail.name || detail.pinned) {
+        const label = node("p", "favorite-label", (detail.pinned ? "已置頂・" : "") +
+          (detail.name ? "自訂名稱：" + detail.name : "常用站點"));
+        card.querySelector(".card-topline").after(label);
+      }
+      edit.type = "button";
+      edit.dataset.stopId = id;
+      edit.setAttribute("aria-label", "編輯收藏名稱與置頂：" + row.停留地點 + " " + row.停留時間);
+      edit.addEventListener("click", () => editFavorite(row));
+      tools.append(edit);
+      card.append(tools);
     }
     card.append(actions);
     if (searchNotice) card.append(searchNotice);
@@ -190,7 +302,8 @@ function createConvenienceUI({
   }
   $("exportFavorites").addEventListener("click", () => {
     try {
-      const backup = C.exportFavorites(getState().preferences.favorites),
+      const preferences = getState().preferences,
+        backup = C.exportFavoriteBackup(preferences.favorites, preferences.favoriteDetails),
         url = URL.createObjectURL(
           new Blob([JSON.stringify(backup, null, 2) + "\n"], {
             type: "application/json",
@@ -204,7 +317,7 @@ function createConvenienceUI({
       a.remove();
       setTimeout(() => URL.revokeObjectURL(url), 30000);
       $("favoritesImportStatus").textContent =
-        "已匯出 " + backup.favorites.length + " 筆收藏識別，不包含日期。";
+        "已匯出 " + backup.favorites.length + " 筆收藏識別、名稱及置頂設定，不包含日期。";
     } catch (e) {
       $("favoritesImportStatus").textContent = e.message;
     }
@@ -219,17 +332,18 @@ function createConvenienceUI({
     if (!file) return;
     try {
       if (file.size > C.MAX_BYTES) throw Error("檔案超過256KB，未變更收藏");
-      const ids = C.importFavorites(await file.text(), file.size),
-        current = getState().preferences.favorites,
-        merged = C.mergeFavorites(current, ids),
+      const incoming = C.parseFavoriteBackup(await file.text(), file.size),
+        ids = incoming.favorites,
+        current = getState().preferences,
+        merged = C.mergeFavoriteState(current, incoming).favorites,
         unresolved = C.unresolved(ids, identities);
-      pendingImport = ids;
+      pendingImport = incoming;
       $("favoritesPreviewText").textContent =
         "檔案含 " +
         ids.length +
         " 個不重複識別；新增 " +
-        (merged.length - current.length) +
-        " 個，合併後共 " +
+        (merged.length - current.favorites.length) +
+        " 個，重複 " + (ids.length - (merged.length - current.favorites.length)) + " 個（名稱與置頂保留本機設定）；合併後共 " +
         merged.length +
         " 個。其中 " +
         unresolved.length +
@@ -242,15 +356,12 @@ function createConvenienceUI({
   $("confirmFavoritesImport").addEventListener("click", () => {
     if (!pendingImport) return;
     try {
-      const merged = C.mergeFavorites(
-        getState().preferences.favorites,
-        pendingImport,
-      );
-      const count = C.unresolved(merged, identities).length;
-      setFavorites(merged);
+      const merged = C.mergeFavoriteState(getState().preferences, pendingImport);
+      const count = C.unresolved(merged.favorites, identities).length;
+      const stored = setFavorites(merged.favorites, merged.favoriteDetails);
       $("favoritesImportStatus").textContent =
-        "已合併，共 " +
-        merged.length +
+        (stored ? "已合併並保存，共 " : "本次已合併但無法永久保存，請匯出備份；共 ") +
+        merged.favorites.length +
         " 個收藏；" +
         count +
         " 個目前未能唯一確認，識別仍保留。";

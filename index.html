@@ -51,6 +51,7 @@
         <span>高雄垃圾車<span class="brand-caption">停靠資訊查詢</span></span>
       </a>
       <div class="header-controls">
+        <button id="largeTextButton" class="large-text-button" type="button" aria-pressed="false" aria-label="大字模式，切換較大文字與按鈕">大字模式</button>
         <span class="header-tag"
           ><span class="status-dot"></span>全市 38 區</span
         >
@@ -70,7 +71,7 @@
           <p class="eyebrow">把日常，整理得剛剛好</p>
           <h1 id="pageTitle">倒垃圾的時間，<br /><span>一查就清楚。</span></h1>
           <p class="hero-description">
-            選行政區、輸入街道，找到你常去的停靠站。
+            輸入街道找停靠站，不知道行政區也能選全市搜尋。
           </p>
           <p class="schedule-label">
             <span class="status-dot"></span>表定停靠資訊・非即時車輛位置
@@ -158,7 +159,8 @@
               <div class="field">
                 <label for="district">行政區</label
                 ><select id="district">
-                  <option value="前鎮區">前鎮區</option>
+                  <option value="all">全高雄市（38區）</option>
+                  <option value="前鎮區" selected>前鎮區</option>
                   <option value="三民區">三民區</option>
                   <option value="苓雅區">苓雅區</option>
                   <option value="鳳山區">鳳山區</option>
@@ -317,7 +319,7 @@
               >
             </div>
             <button id="todayButton" type="button" disabled>
-              查看本區站點 <span aria-hidden="true">↗</span>
+              查看今日站點 <span aria-hidden="true">↗</span>
             </button>
           </div>
           <p id="filterNotice" class="filter-notice" aria-live="polite"></p>
@@ -338,7 +340,7 @@
               accept=".json,application/json"
               hidden
             />
-            <p>只備份站點識別，預設合併且最多200筆；不含清運日期或搜尋紀錄。</p>
+            <p>備份站點識別、名稱及置頂；預設合併且最多200筆，不含清運日期或搜尋紀錄。</p>
             <p id="favoritesImportStatus" role="status"></p>
           </section>
           <div class="results-summary">
@@ -454,11 +456,38 @@
       ><textarea id="copyText" readonly rows="6"></textarea>
       <form method="dialog"><button class="primary">完成</button></form>
     </dialog>
+    <dialog id="reportDialog" aria-labelledby="reportHeading" aria-describedby="reportDisclaimer">
+      <h2 id="reportHeading">回報停靠資訊問題</h2>
+      <p id="reportDisclaimer">這裡只產生回報文字，不會自動送出或更正資料。請勿填入姓名、電話等不必要的個人資料。</p>
+      <div class="dialog-fields">
+        <div><label for="reportType">問題類型</label><select id="reportType">
+          <option value="place">停靠地點可能錯誤</option><option value="time">表定時間可能錯誤</option>
+          <option value="recycling">資源回收日可能錯誤</option><option value="map">地圖位置可能錯誤</option><option value="other">其他問題</option>
+        </select></div>
+        <div><label for="reportNote">補充說明（選填，最多300個字元）</label><textarea id="reportNote" rows="3" maxlength="600" placeholder="描述發現的問題即可，不必提供個人資料。"></textarea></div>
+        <details id="reportPreview"><summary>查看完整回報文字</summary><label class="sr-only" for="reportText">回報文字預覽</label><textarea id="reportText" readonly rows="6"></textarea></details>
+        <p id="reportStatus" role="status"></p>
+        <div class="backup-buttons"><button id="copyReport" class="primary" type="button">複製回報內容</button><button id="closeReport" type="button">關閉</button></div>
+      </div>
+    </dialog>
+    <dialog id="favoriteDialog" aria-labelledby="favoriteHeading">
+      <h2 id="favoriteHeading">收藏名稱與置頂</h2>
+      <p id="favoriteOfficialPlace"></p>
+      <form id="favoriteForm" class="dialog-fields">
+        <div><label for="favoriteName">自訂名稱</label>
+          <input id="favoriteName" type="text" maxlength="60" aria-describedby="favoriteNameHint" />
+          <p id="favoriteNameHint">最多30個字元；留空即可清除。只更改你的收藏，正式地點仍會顯示。</p></div>
+        <label class="check-label" for="favoritePinned"><input id="favoritePinned" type="checkbox" />置頂此站點</label>
+        <p id="favoriteEditStatus" role="status"></p>
+        <div class="backup-buttons"><button class="primary" type="submit">儲存收藏設定</button>
+          <button id="cancelFavoriteEdit" type="button">取消</button></div>
+      </form>
+    </dialog>
     <dialog id="favoritesPreview" aria-labelledby="favoritesPreviewHeading">
       <h2 id="favoritesPreviewHeading">確認合併收藏</h2>
       <p id="favoritesPreviewText"></p>
       <p>
-        不存在、識別不完整或有歧義的站點仍保留識別，不會改配相似站點。原有搜尋紀錄不受影響。
+        重複收藏的名稱與置頂一律保留本機設定。不存在、識別不完整或有歧義的站點仍保留識別，不會改配相似站點。原有搜尋紀錄不受影響。
       </p>
       <div class="backup-buttons">
         <button id="confirmFavoritesImport" class="primary" type="button">

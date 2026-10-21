@@ -169,7 +169,7 @@ test("favorites export/import restores, merges, deduplicates and preserves recen
   await page.click("#exportFavorites");
   const file = await (await download).path(),
     backup = JSON.parse(fs.readFileSync(file, "utf8"));
-  expect(backup.version).toBe(1);
+  expect(backup.version).toBe(2);
   expect(backup.favorites).toHaveLength(1);
   expect(backup.favorites[0]).not.toHaveProperty("garbageDay");
   await page.evaluate(() => {
