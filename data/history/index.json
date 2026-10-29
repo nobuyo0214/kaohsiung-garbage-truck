@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "note": "從此基準開始追蹤；紀錄時間非官方發布日期。歷史下載版本不完整，未補造過去變更。",
+  "entries": [
+    {
+      "kind": "baseline",
+      "recordedAt": "2026-10-29T16:51:51.549Z",
+      "byteRevision": "bf5c94963b313a2469206d877f38b3bb1953987bee19f5f4ad6fd7a90e22f3db",
+      "contentRevision": "e6d56b8505ad5154d1a9c860042c058c9808f95e9ff5336a24b1144560acd7d8",
+      "counts": {
+        "districts": 38,
+        "files": 39,
+        "validRecords": 13871
+      },
+      "snapshot": "bf5c94963b313a2469206d877f38b3bb1953987bee19f5f4ad6fd7a90e22f3db.json",
+      "officialPublishedAt": null,
+      "sourceNote": "高雄市環保局相關開放資料與部分環境部路線整理；逐檔原始下載版本未完整保存。",
+      "difference": null
+    }
+  ]
+}

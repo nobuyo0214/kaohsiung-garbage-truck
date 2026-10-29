@@ -23,9 +23,13 @@
     <script defer src="js/site-data.js"></script>
     <script defer src="js/location-quality.js"></script>
     <script defer src="js/convenience-core.js"></script>
+    <script defer src="js/stop-qr.js"></script>
+    <script defer src="js/qr-ui.js"></script>
     <script defer src="js/convenience-ui.js"></script>
     <script defer src="js/journey-core.js"></script>
     <script defer src="js/nearby-session.js"></script>
+    <script defer src="js/site-version.js"></script>
+    <script defer src="js/version-ui.js"></script>
     <script defer src="js/search-app.js"></script>
     <script defer src="js/pwa.js"></script>
   </head>
@@ -427,6 +431,15 @@
                 · <a href="data/geo/provenance.json">範圍圖資來源與限制</a>
               </p>
             </details>
+            <details id="versionInfo" class="source-info">
+              <summary>資料版本與更新紀錄</summary>
+              <dl id="versionSummary"></dl>
+              <p><a href="https://github.com/nobuyo0214/kaohsiung-garbage-truck" target="_blank" rel="noopener noreferrer">GitHub 原始碼 ↗</a> · <a id="buildBaseLink" target="_blank" rel="noopener noreferrer">建置基底版本</a></p>
+              <p id="historyStatus" role="status"></p>
+              <p id="dataHistoryNote"></p>
+              <details><summary>查看資料變更紀錄</summary><ol id="dataHistoryEntries"></ol></details>
+              <p>來源：高雄市環保局相關開放資料與部分環境部路線整理。歷史逐檔下載版本未完整保存，來源與限制見上方「資料來源與更新說明」。未確認的座標維持待確認；未知資源回收日不推測。</p>
+            </details>
             <details id="installInfo" class="install-info">
               <summary>加入手機主畫面</summary>
               <p>
@@ -469,6 +482,14 @@
       </footer>
     </main>
     <div id="toast" class="toast" role="status" aria-live="polite" hidden></div>
+    <dialog id="qrDialog" aria-labelledby="qrHeading" aria-describedby="qrStatus">
+      <h2 id="qrHeading">站點 QR Code</h2>
+      <p id="qrStation"></p>
+      <canvas id="qrCanvas" role="img" aria-label="掃描後開啟本站停靠站資訊的QR Code" hidden></canvas>
+      <p id="qrStatus" role="status"></p>
+      <label for="qrURL">站點專屬網址</label><textarea id="qrURL" readonly rows="3" spellcheck="false"></textarea>
+      <div class="backup-buttons"><button id="copyQRLink" type="button">複製站點網址</button><button id="downloadQR" type="button" disabled>下載 QR Code PNG</button><button id="closeQR" type="button">關閉</button></div>
+    </dialog>
     <dialog id="copyDialog" aria-labelledby="copyHeading">
       <h2 id="copyHeading">複製停靠資訊</h2>
       <p>瀏覽器未允許自動複製，請長按或選取下方文字複製。</p>

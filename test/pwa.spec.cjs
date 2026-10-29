@@ -252,3 +252,18 @@ test("install guidance and supported install prompts require a deliberate click"
   await page.click("#installButton");
   expect(await page.evaluate(() => window.installWasPrompted)).toBe(true);
 });
+
+test('version history and on-demand QR resources work under the Pages project path without caching data', async ({ page }) => {
+  await ready(page);
+  await page.locator('#versionInfo > summary').click();
+  await expect(page.locator('#historyStatus')).toContainText('已與本次路線檔案雜湊核對');
+  await page.locator('.qr-button:not(:disabled)').first().click();
+  await expect(page.locator('#qrCanvas')).toBeVisible();
+  await expect(page.locator('#qrURL')).toHaveValue(/^https:\/\/nobuyo0214\.github\.io\/kaohsiung-garbage-truck\/#stop=1\./);
+  const urls = await cachedURLs(page);
+  expect(urls.some(url => url.endsWith('/js/vendor/qrcode-generator-2.0.4.js'))).toBe(true);
+  expect(urls.some(url => url.includes('/data/history/'))).toBe(false);
+  await page.keyboard.press('Escape');
+  await page.reload();
+  await expect(page.locator('#searchButton')).toBeEnabled();
+});

@@ -21,6 +21,17 @@
         .sort()
         .map((k) => [k, r[k]]),
     );
+  // Cache by the original weekday value, preserving the core's exact interpretation.
+  function weekdayMatcher() {
+    const cache = new Map();
+    return (value, day) => {
+      if (!day) return true;
+      let days = cache.get(value);
+      if (!days) { days = new Map(); cache.set(value, days); }
+      if (!days.has(day)) days.set(day, D.matchesWeekday(value, day));
+      return days.get(day);
+    };
+  }
   // Collapse identical displayed content only, AFTER applyRules checks raw ambiguity.
   // Seq and coordinates are retained in the raw data; neither is rendered as a different stop.
   function createIndex(rows) {
@@ -78,6 +89,7 @@
       b.startMinute === null ? -1 : direction * (a.startMinute - b.startMinute);
     city.sort(byTime(1));
     const cityDescending = [...city].sort(byTime(-1));
+    const matchesWeekday = weekdayMatcher();
     function search(filters) {
       const f = { ...defaults, ...filters },
         keyword = D.normalize(f.keyword);
@@ -89,7 +101,7 @@
         (r) =>
           (f.district === ALL_DISTRICTS || !f.village || r.villageName === f.village) &&
           (!keyword || text.get(r).includes(keyword)) &&
-          D.matchesWeekday(
+          matchesWeekday(
             f.dayType === "garbage" ? r.garbageDay : r.recycleDay,
             f.weekday,
           ) &&
@@ -236,6 +248,7 @@
     return result;
   }
   return {
+    weekdayMatcher,
     validFavoriteDetail,
     cleanFavoriteDetails,
     ALL_DISTRICTS,

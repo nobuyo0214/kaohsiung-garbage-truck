@@ -59,7 +59,15 @@
       day: T.taipeiWeekday(now), minute: Number(parts.hour) * 60 + Number(parts.minute),
       time: parts.hour + ":" + parts.minute };
   }
+  const schedules = new WeakMap(), matchesWeekday = T.weekdayMatcher();
   function schedule(row) {
+    const cached = schedules.get(row);
+    if (cached && cached.raw === row.停留時間) return cached.value;
+    const value = parseSchedule(row);
+    schedules.set(row, { raw: row.停留時間, value });
+    return value;
+  }
+  function parseSchedule(row) {
     const normalized = D.normalizeTime(row.停留時間);
     if (!normalized) return { normalized: "", start: null, crossesMidnight: false };
     const times = normalized.split("-").map(t => Number(t.slice(0, 2)) * 60 + Number(t.slice(3, 5)));
@@ -68,11 +76,17 @@
   function todayRows(rows, { now = new Date(), remaining = false } = {}) {
     const clock = taipeiClock(now);
     if (!clock) return [];
-    return rows.filter(row => D.matchesWeekday(row.recycleDay, clock.day))
-      .map(row => ({ row, ...schedule(row) }))
-      .filter(entry => !remaining || (entry.start !== null && !entry.crossesMidnight && entry.start >= clock.minute))
-      .sort((a, b) => (a.start ?? Infinity) - (b.start ?? Infinity))
-      .map(entry => entry.row);
+    const result = rows.filter(row => {
+      if (!matchesWeekday(row.recycleDay, clock.day)) return false;
+      if (!remaining) return true;
+      const entry = schedule(row);
+      return entry.start !== null && !entry.crossesMidnight && entry.start >= clock.minute;
+    });
+    const minute = row => schedule(row).start ?? Infinity;
+    // Search indices already have stable ascending time order; retain ties and sort only if needed.
+    if (result.some((row, i) => i > 0 && minute(row) < minute(result[i - 1])))
+      result.sort((a, b) => minute(a) - minute(b));
+    return result;
   }
   return { taipeiClock, schedule, todayRows, RADII, POSITION_LIFETIME, validPoint, haversine, nearbyIndex, formatDistance, positionValue };
 });

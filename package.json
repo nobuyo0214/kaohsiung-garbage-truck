@@ -10,10 +10,12 @@
     "audit": "node scripts/data-tool.cjs audit --out reports",
     "reconcile:sanmin-west": "node scripts/data-tool.cjs reconcile --official data/official/sanmin-west.csv --out reports/sanmin-west",
     "review:sanmin-west": "node scripts/review-report.cjs",
-    "investigate:sanmin-west": "node scripts/evidence-report.cjs"
+    "investigate:sanmin-west": "node scripts/evidence-report.cjs",
+    "measure:performance": "node scripts/performance.cjs"
   },
   "devDependencies": {
     "@playwright/test": "1.56.1",
+    "jsqr": "1.4.0",
     "papaparse": "5.5.3"
   },
   "engines": {
