@@ -8,6 +8,7 @@ const { generate } = require("./site-metadata.cjs"),
   sha = (value) => crypto.createHash("sha256").update(value).digest("hex");
 function build({ check = false } = {}) {
   generate({ check });
+  require("./data-history.cjs").generate({ check });
   const names = [
     "index.html",
     "css/search.css",
@@ -25,11 +26,17 @@ function build({ check = false } = {}) {
     "js/location-quality.js",
     "js/convenience-core.js",
     "js/convenience-ui.js",
+    "js/stop-qr.js",
+    "js/qr-ui.js",
+    "js/vendor/qrcode-generator-2.0.4.js",
     "js/journey-core.js",
     "js/nearby-session.js",
     "js/search-app.js",
     "js/pwa.js",
+    "js/version-ui.js",
+    "js/site-version.js",
   ];
+  require("./site-version.cjs").generate(names, { check });
   const assets = names.map((name) => [
     name,
     sha(fs.readFileSync(path.join(root, name))),

@@ -1343,3 +1343,16 @@ dialog { max-height: 85dvh; overflow-y: auto; overflow-wrap: anywhere; }
 .timeline-view .today-bar > div { display: none; }
 .timeline-help summary { min-height: 44px; padding: 8px 0; cursor: pointer; font-size: 13px; color: var(--green); }
 .large-text .timeline-help summary { font-size: 1.0625rem; }
+
+/* Compact additions retain the shared responsive controls and large-text preference. */
+#versionInfo dd, #dataHistoryEntries { overflow-wrap:anywhere; }
+#dataHistoryEntries { padding-inline-start:1.3em; }
+#dataHistoryEntries li + li { margin-top:1rem; }
+#qrDialog { width:min(100% - 2rem, 34rem); }
+#qrCanvas { display:block; width:min(100%, 22rem); height:auto; margin:1rem auto; image-rendering:pixelated; }
+#qrCanvas[hidden] { display:none; }
+#qrURL { width:100%; overflow-wrap:anywhere; font-size:1rem; }
+#qrDialog .backup-buttons { margin-top:1rem; }
+.qr-button { min-height:44px; }
+
+.large-text #qrURL { font-size:1.25rem; }

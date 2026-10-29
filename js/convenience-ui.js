@@ -10,6 +10,7 @@ function createConvenienceUI({
   const C = Convenience,
     T = SearchTools,
     $ = (id) => document.getElementById(id);
+  const qrUI = createStopQRUI({ toast });
   let locationAudit = null,
     shared = null,
     pendingImport = null,
@@ -164,6 +165,12 @@ function createConvenienceUI({
     if (button.disabled) button.title = "完整識別不足或有歧義，請使用複製資訊";
     button.addEventListener("click", () => share(row));
     actions.append(button);
+    const qr = node("button", "qr-button", "QR Code");
+    qr.type = "button";
+    qr.setAttribute("aria-label", "產生 QR Code：" + row.停留地點 + " " + row.停留時間);
+    qr.disabled = button.disabled;
+    qr.addEventListener("click", () => qrUI.open(row, qr));
+    actions.append(qr);
     const report = node("button", "report-button", "回報問題");
     report.type = "button";
     report.setAttribute("aria-label", "回報問題：" + row.停留地點 + " " + row.停留時間);
@@ -238,6 +245,7 @@ function createConvenienceUI({
     }
   }
   function updateData({ rows, topology, complete, meta, loadedAt }) {
+    window.dispatchEvent(new CustomEvent("route-data-state", { detail: { rows, complete, meta } }));
     identities = C.identityIndex(rows);
     locationAudit =
       complete && topology ? LocationQuality.analyze(rows, topology) : null;

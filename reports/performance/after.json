@@ -1,0 +1,408 @@
+{
+  "schema": 1,
+  "measuredAt": "2026-10-29T16:54:12.380Z",
+  "commit": "3ddaac4d184a17f64ccd18160af712d891dec3f8",
+  "workingTree": "modified",
+  "environment": {
+    "browser": "154.0.8037.57",
+    "node": "v24.19.0",
+    "platform": "linux",
+    "cpu": "AMD EPYC 9V74 80-Core Processor",
+    "cpuRate": 4,
+    "latencyMs": 40,
+    "downloadBytesPerSecond": 625000,
+    "uploadBytesPerSecond": 250000,
+    "viewport": "390x844",
+    "runs": 5,
+    "cache": "cold=new context; warm=same context reload; gzip; HTTP interface cache; CSV no-store; Service Worker blocked",
+    "note": "Local controlled server, not production RUM. Instrumentation wraps existing functions. Heap is Chromium approximate and includes benchmark references; no privacy/location telemetry."
+  },
+  "summary": {
+    "cold": {
+      "interactiveMs": {
+        "median": 3677.5,
+        "min": 3548.5,
+        "max": 3984.9000000003725
+      },
+      "csvLoadMs": {
+        "median": 838.6999999992549,
+        "min": 817,
+        "max": 910.1999999992549
+      },
+      "csvParseMs": {
+        "median": 209.8999999947846,
+        "min": 205.70000000298023,
+        "max": 231.5000000037253
+      },
+      "indexMs": {
+        "median": 295.6000000014901,
+        "min": 261.30000000074506,
+        "max": 349.00000000186265
+      },
+      "qualityMs": {
+        "median": 715.9000000003725,
+        "min": 696,
+        "max": 749.0999999996275
+      },
+      "prepareMs": {
+        "median": 63.900000002235174,
+        "min": 55.90000000409782,
+        "max": 83.80000000074506
+      },
+      "citySearchMs": {
+        "median": 22.09999999962747,
+        "min": 11.5,
+        "max": 27
+      },
+      "districtSearchMs": {
+        "median": 0.599999999627471,
+        "min": 0.2000000011175871,
+        "max": 1.199999999254942
+      },
+      "nearbyMs": {
+        "median": 4.600000001490116,
+        "min": 3.199999999254942,
+        "max": 9.199999999254942
+      },
+      "timelineMs": {
+        "median": 34.5,
+        "min": 31.600000001490116,
+        "max": 34.899999998509884
+      },
+      "heapBytes": {
+        "median": 33237398,
+        "min": 32627750,
+        "max": 41775400
+      },
+      "transferBytes": {
+        "median": 434539,
+        "min": 434539,
+        "max": 434539
+      },
+      "csvRequests": {
+        "median": 40,
+        "min": 40,
+        "max": 40
+      },
+      "csvNetworkSpanMs": {
+        "median": 826.4000000003725,
+        "min": 810.5999999996275,
+        "max": 886.5999999996275
+      },
+      "firstResultsDOMMs": {
+        "median": 158.69999999925494,
+        "min": 150.90000000037253,
+        "max": 170.60000000149012
+      },
+      "firstResultsPaintMs": {
+        "median": 188.90000000037253,
+        "min": 183.5,
+        "max": 202.80000000074506
+      },
+      "cards": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      }
+    },
+    "warm": {
+      "interactiveMs": {
+        "median": 2988.9000000003725,
+        "min": 2837.9000000003725,
+        "max": 3078.300000000745
+      },
+      "csvLoadMs": {
+        "median": 812.8999999985099,
+        "min": 783.8999999985099,
+        "max": 835.2000000011176
+      },
+      "csvParseMs": {
+        "median": 143.80000000074506,
+        "min": 135.59999999590218,
+        "max": 154.20000000484288
+      },
+      "indexMs": {
+        "median": 313.59999999962747,
+        "min": 282.90000000037253,
+        "max": 345.2000000011176
+      },
+      "qualityMs": {
+        "median": 679.5999999996275,
+        "min": 647.8999999985099,
+        "max": 729.7999999988824
+      },
+      "prepareMs": {
+        "median": 58.29999999888241,
+        "min": 54.90000000037253,
+        "max": 61
+      },
+      "citySearchMs": {
+        "median": 20.699999999254942,
+        "min": 17.40000000037253,
+        "max": 24.90000000037253
+      },
+      "districtSearchMs": {
+        "median": 0.7999999988824129,
+        "min": 0.5,
+        "max": 0.900000000372529
+      },
+      "nearbyMs": {
+        "median": 3.699999999254942,
+        "min": 3.300000000745058,
+        "max": 6
+      },
+      "timelineMs": {
+        "median": 30.300000000745058,
+        "min": 25.09999999962747,
+        "max": 35.09999999962747
+      },
+      "heapBytes": {
+        "median": 53357078,
+        "min": 33144894,
+        "max": 54965654
+      },
+      "transferBytes": {
+        "median": 359137,
+        "min": 359137,
+        "max": 359137
+      },
+      "csvRequests": {
+        "median": 40,
+        "min": 40,
+        "max": 40
+      },
+      "csvNetworkSpanMs": {
+        "median": 804.2000000011176,
+        "min": 774.5,
+        "max": 822.9000000003725
+      },
+      "firstResultsDOMMs": {
+        "median": 114.40000000037253,
+        "min": 96.29999999888241,
+        "max": 133.5
+      },
+      "firstResultsPaintMs": {
+        "median": 136.2000000011176,
+        "min": 112.5,
+        "max": 160.10000000149012
+      },
+      "cards": {
+        "median": 30,
+        "min": 30,
+        "max": 30
+      }
+    }
+  },
+  "samples": [
+    {
+      "run": 1,
+      "cache": "cold",
+      "interactiveMs": 3751.7000000011176,
+      "csvLoadMs": 862.3000000007451,
+      "csvParseMs": 208.20000000298023,
+      "indexMs": 290.5,
+      "qualityMs": 709,
+      "prepareMs": 72.1999999973923,
+      "citySearchMs": 26.5,
+      "districtSearchMs": 0.5,
+      "nearbyMs": 5.699999999254942,
+      "timelineMs": 34.5,
+      "heapBytes": 33237398,
+      "transferBytes": 434539,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 840.0999999996275,
+      "firstResultsDOMMs": 154.5,
+      "firstResultsPaintMs": 183.5,
+      "cards": 30
+    },
+    {
+      "run": 1,
+      "cache": "warm",
+      "interactiveMs": 3052.5,
+      "csvLoadMs": 812.8999999985099,
+      "csvParseMs": 141.1000000052154,
+      "indexMs": 345.2000000011176,
+      "qualityMs": 715.7000000011176,
+      "prepareMs": 61,
+      "citySearchMs": 20.699999999254942,
+      "districtSearchMs": 0.7999999988824129,
+      "nearbyMs": 3.300000000745058,
+      "timelineMs": 25.09999999962747,
+      "heapBytes": 53357078,
+      "transferBytes": 359137,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 804.2000000011176,
+      "firstResultsDOMMs": 96.29999999888241,
+      "firstResultsPaintMs": 112.5,
+      "cards": 30
+    },
+    {
+      "run": 2,
+      "cache": "cold",
+      "interactiveMs": 3677.5,
+      "csvLoadMs": 838.6999999992549,
+      "csvParseMs": 209.8999999947846,
+      "indexMs": 312.4000000022352,
+      "qualityMs": 741.8000000007451,
+      "prepareMs": 63.900000002235174,
+      "citySearchMs": 27,
+      "districtSearchMs": 0.599999999627471,
+      "nearbyMs": 4.600000001490116,
+      "timelineMs": 33.79999999888241,
+      "heapBytes": 41775400,
+      "transferBytes": 434539,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 824.2000000011176,
+      "firstResultsDOMMs": 170.60000000149012,
+      "firstResultsPaintMs": 202.80000000074506,
+      "cards": 30
+    },
+    {
+      "run": 2,
+      "cache": "warm",
+      "interactiveMs": 2926.5,
+      "csvLoadMs": 835.2000000011176,
+      "csvParseMs": 151.7999999988824,
+      "indexMs": 282.90000000037253,
+      "qualityMs": 678.9000000003725,
+      "prepareMs": 58.29999999888241,
+      "citySearchMs": 23.200000001117587,
+      "districtSearchMs": 0.900000000372529,
+      "nearbyMs": 6,
+      "timelineMs": 35.09999999962747,
+      "heapBytes": 33144894,
+      "transferBytes": 359137,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 822.9000000003725,
+      "firstResultsDOMMs": 131.5,
+      "firstResultsPaintMs": 160.10000000149012,
+      "cards": 30
+    },
+    {
+      "run": 3,
+      "cache": "cold",
+      "interactiveMs": 3984.9000000003725,
+      "csvLoadMs": 910.1999999992549,
+      "csvParseMs": 231.5000000037253,
+      "indexMs": 349.00000000186265,
+      "qualityMs": 749.0999999996275,
+      "prepareMs": 83.80000000074506,
+      "citySearchMs": 22.09999999962747,
+      "districtSearchMs": 1.199999999254942,
+      "nearbyMs": 9.199999999254942,
+      "timelineMs": 34.899999998509884,
+      "heapBytes": 41360332,
+      "transferBytes": 434539,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 886.5999999996275,
+      "firstResultsDOMMs": 159,
+      "firstResultsPaintMs": 188.90000000037253,
+      "cards": 30
+    },
+    {
+      "run": 3,
+      "cache": "warm",
+      "interactiveMs": 2988.9000000003725,
+      "csvLoadMs": 793.5999999996275,
+      "csvParseMs": 135.59999999590218,
+      "indexMs": 340.69999999925494,
+      "qualityMs": 679.5999999996275,
+      "prepareMs": 54.90000000037253,
+      "citySearchMs": 17.40000000037253,
+      "districtSearchMs": 0.7000000011175871,
+      "nearbyMs": 3.699999999254942,
+      "timelineMs": 25.09999999962747,
+      "heapBytes": 39068797,
+      "transferBytes": 359137,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 785.5,
+      "firstResultsDOMMs": 114.40000000037253,
+      "firstResultsPaintMs": 136.2000000011176,
+      "cards": 30
+    },
+    {
+      "run": 4,
+      "cache": "cold",
+      "interactiveMs": 3548.5,
+      "csvLoadMs": 817,
+      "csvParseMs": 205.70000000298023,
+      "indexMs": 261.30000000074506,
+      "qualityMs": 715.9000000003725,
+      "prepareMs": 55.90000000409782,
+      "citySearchMs": 19.40000000037253,
+      "districtSearchMs": 0.599999999627471,
+      "nearbyMs": 3.5,
+      "timelineMs": 34.5,
+      "heapBytes": 32627750,
+      "transferBytes": 434539,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 810.5999999996275,
+      "firstResultsDOMMs": 150.90000000037253,
+      "firstResultsPaintMs": 183.7000000011176,
+      "cards": 30
+    },
+    {
+      "run": 4,
+      "cache": "warm",
+      "interactiveMs": 2837.9000000003725,
+      "csvLoadMs": 783.8999999985099,
+      "csvParseMs": 143.80000000074506,
+      "indexMs": 297.59999999962747,
+      "qualityMs": 647.8999999985099,
+      "prepareMs": 57.30000000074506,
+      "citySearchMs": 19.200000001117587,
+      "districtSearchMs": 0.5,
+      "nearbyMs": 5.400000000372529,
+      "timelineMs": 30.300000000745058,
+      "heapBytes": 54789062,
+      "transferBytes": 359137,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 774.5,
+      "firstResultsDOMMs": 102.90000000037253,
+      "firstResultsPaintMs": 123.5,
+      "cards": 30
+    },
+    {
+      "run": 5,
+      "cache": "cold",
+      "interactiveMs": 3555.5,
+      "csvLoadMs": 836.8000000007451,
+      "csvParseMs": 220,
+      "indexMs": 295.6000000014901,
+      "qualityMs": 696,
+      "prepareMs": 58.5,
+      "citySearchMs": 11.5,
+      "districtSearchMs": 0.2000000011175871,
+      "nearbyMs": 3.199999999254942,
+      "timelineMs": 31.600000001490116,
+      "heapBytes": 32978386,
+      "transferBytes": 434539,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 826.4000000003725,
+      "firstResultsDOMMs": 158.69999999925494,
+      "firstResultsPaintMs": 200.69999999925494,
+      "cards": 30
+    },
+    {
+      "run": 5,
+      "cache": "warm",
+      "interactiveMs": 3078.300000000745,
+      "csvLoadMs": 829,
+      "csvParseMs": 154.20000000484288,
+      "indexMs": 313.59999999962747,
+      "qualityMs": 729.7999999988824,
+      "prepareMs": 59.000000001862645,
+      "citySearchMs": 24.90000000037253,
+      "districtSearchMs": 0.8000000007450581,
+      "nearbyMs": 3.400000000372529,
+      "timelineMs": 31.59999999962747,
+      "heapBytes": 54965654,
+      "transferBytes": 359137,
+      "csvRequests": 40,
+      "csvNetworkSpanMs": 816.3000000007451,
+      "firstResultsDOMMs": 133.5,
+      "firstResultsPaintMs": 153,
+      "cards": 30
+    }
+  ]
+}

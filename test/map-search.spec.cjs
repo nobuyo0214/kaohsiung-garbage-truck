@@ -78,9 +78,11 @@ for (const width of [320, 390, 768])
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
       await page.locator(".share-button").focus();
       await page.keyboard.press("Tab");
+      await expect(page.locator(".qr-button")).toBeFocused();
+      await page.keyboard.press("Tab");
       await expect(search).toBeFocused();
       const outline = await search.evaluate(el => getComputedStyle(el).outlineStyle);
       expect(outline).toBe("solid");
-      await expect(page.locator(".stop-actions > button, .stop-actions > a")).toHaveCount(2);
+      await expect(page.locator(".stop-actions > button, .stop-actions > a")).toHaveCount(3);
     });
   });
