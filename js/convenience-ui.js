@@ -376,6 +376,7 @@ function createConvenienceUI({
   });
   window.addEventListener("hashchange", resolveShared);
   return {
+    getLocationAudit: () => locationAudit,
     decorateCard,
     updateData,
     updateManager,

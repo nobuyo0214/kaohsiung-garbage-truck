@@ -1319,3 +1319,27 @@ dialog { max-height: 85dvh; overflow-y: auto; overflow-wrap: anywhere; }
 .dialog-fields > div { min-width: 0; }
 /* Grid items must be allowed to shrink when browser text settings grow. */
 .large-text .workspace > * { min-width: 0; }
+
+.nearby-tools { border-top: 1px solid var(--line); margin-top: 20px; padding-top: 16px; }
+#nearbyButton { width: 100%; min-height: 48px; color: var(--green); background: var(--soft); border: 1px solid #b9cfbd; border-radius: 9px; padding: 10px; font-weight: 650; margin-bottom: 12px; }
+.nearby-tools label { font-size: 12px; }
+.stop-distance { color: var(--green); font-size: 14px; margin: 0 0 12px; overflow-wrap: anywhere; }
+.large-text .nearby-tools label, .large-text .stop-distance { font-size: 1.25rem; }
+
+.timeline-controls { border: 1px solid var(--line); background: var(--paper); border-radius: 12px; padding: 16px; margin-top: 16px; }
+.timeline-controls p { font-size: 13px; overflow-wrap: anywhere; }
+#timelineClock { color: var(--green); font-weight: 650; }
+#results.timeline-results { grid-template-columns: minmax(0, 1fr); border-left: 2px solid #b9cfbd; padding-left: 16px; }
+.timeline-card { position: relative; }
+.timeline-card::before { content: ""; position: absolute; width: 10px; height: 10px; background: var(--green); border-radius: 50%; top: 30px; left: -23px; }
+.large-text .timeline-controls p { font-size: 1.0625rem; }
+@media (max-width: 380px) { #results.timeline-results { padding-left: 12px; } .timeline-card::before { left: -19px; } }
+
+.official-entry { margin-top: 16px; }
+#officialLiveLink { display: inline-flex; align-items: center; min-height: 44px; padding: 8px 0; font-size: 13px; text-underline-offset: 4px; overflow-wrap: anywhere; }
+.large-text #officialLiveLink { font-size: 1.125rem; }
+
+.timeline-view .today-bar { justify-content: flex-end; min-height: 44px; padding: 0; background: transparent; border: 0; margin-bottom: 0; }
+.timeline-view .today-bar > div { display: none; }
+.timeline-help summary { min-height: 44px; padding: 8px 0; cursor: pointer; font-size: 13px; color: var(--green); }
+.large-text .timeline-help summary { font-size: 1.0625rem; }

@@ -23,7 +23,7 @@
     loading = false;
   let currentMatches = [],
     visibleCount = 0,
-    savedView = false,
+    viewMode = "search",
     activeFilters = null,
     retiredSearchNotice = "";
   let failedFiles = [],
@@ -31,6 +31,54 @@
     preferences = { favorites: [], recent: [] };
   let toastTimer, suggestionTimer;
   const citySuggestions = new Map();
+  let nearby = Journey.nearbyIndex([], null), distances = new WeakMap();
+  function leaveNearby() {
+    const active = locationSession.get() || $("nearbyButton").getAttribute("aria-busy") === "true";
+    locationSession.cancel();
+    distances = new WeakMap();
+    if (active) $("nearbyStatus").textContent = "已取消或清除本次定位；需要時請重新定位。";
+  }
+  function renderNearby({ scroll = true } = {}) {
+    const position = locationSession.get();
+    if (!loaded || !position) return;
+    viewMode = "nearby";
+    extras.clearShared();
+    retiredSearchNotice = "";
+    const entries = nearby.search(position.point, Number($("nearbyRadius").value));
+    distances = new WeakMap(entries.map(entry => [entry.row, entry.distance]));
+    currentMatches = entries.map(entry => entry.row);
+    $("nearbyStatus").textContent = "定位誤差約 " + Math.ceil(position.accuracy) +
+      "公尺；僅為本次定位的直線距離，非車輛距離。切換畫面或5分鐘後清除位置。";
+    updateViewButtons();
+    updateDayNotice();
+    renderMatches();
+    if (scroll) scrollToResults();
+  }
+  const locationSession = createNearbySession({
+    onResult: renderNearby,
+    onBusy: busy => {
+      $("nearbyButton").disabled = busy || !loaded;
+      $("nearbyButton").setAttribute("aria-busy", String(busy));
+      $("nearbyButton").textContent = busy ? "正在取得位置…" : "找我附近的停靠站";
+      if (busy) {
+        $("nearbyStatus").textContent = "正在取得位置；你仍可使用一般文字搜尋。";
+        if (viewMode === "nearby") {
+          currentMatches = [];
+          $("moreButton").hidden = true;
+          $("resultStatus").textContent = "正在重新定位…";
+          emptyState("正在更新附近站點", "定位完成後才顯示新的直線距離。");
+        }
+      }
+    },
+    onError: message => {
+      if (viewMode === "nearby" && loaded) searchTruck({ remember: false, scroll: false });
+      $("nearbyStatus").textContent = message;
+    },
+    onClear: message => {
+      if (viewMode === "nearby" && loaded) searchTruck({ remember: false, scroll: false });
+      $("nearbyStatus").textContent = message;
+    },
+  });
 
   function element(tag, className, text) {
     const node = document.createElement(tag);
@@ -212,11 +260,14 @@
     );
   }
   function updateDayNotice() {
-    const district = savedView
+    const district = viewMode === "saved"
       ? ""
       : activeFilters?.district || $("district").value;
     const messages = retiredSearchNotice ? [retiredSearchNotice] : [];
-    if (savedView)
+    if (viewMode === "nearby") {
+      messages.push("僅列出可安全導航的已知站點，依直線距離排序；未通過位置品質檢查的站點不列入，距離不是步行路程或車輛位置。");
+      if (failedFiles.length || !mapping.ok) messages.push("部分路線或版本資料未載入，附近結果可能不完整；請重試載入。");
+    } else if (viewMode === "saved")
       messages.push(
         "收藏顯示所有行政區，未套用左側篩選；資源回收日依當次載入資料顯示。",
       );
@@ -241,10 +292,15 @@
     $("filterNotice").textContent = messages.join(" ");
   }
   function updateViewButtons() {
-    $("viewAllButton").setAttribute("aria-pressed", String(!savedView));
-    $("viewSavedButton").setAttribute("aria-pressed", String(savedView));
+    $("viewAllButton").setAttribute("aria-pressed", String(viewMode === "search"));
+    $("viewSavedButton").setAttribute("aria-pressed", String(viewMode === "saved"));
     $("favoriteCount").textContent = preferences.favorites.length;
-    $("resultsHeading").textContent = savedView ? "我的收藏" : "停靠資訊";
+    $("resultsHeading").textContent = viewMode === "timeline" ? "今日回收時間軸" : viewMode === "nearby" ? "附近可靠停靠站" : viewMode === "saved" ? "我的收藏" : "停靠資訊";
+    $("todayButton").setAttribute("aria-pressed", String(viewMode === "timeline"));
+    $("todayButton").textContent = viewMode === "timeline" ? "重新套用今日條件 ↗" : "查看今日時間軸 ↗";
+    $("timelineControls").closest(".results-panel").classList.toggle("timeline-view", viewMode === "timeline");
+    $("timelineControls").hidden = viewMode !== "timeline" || !loaded;
+    $("results").classList.toggle("timeline-results", viewMode === "timeline");
     extras.updateManager();
   }
   function scrollToResults() {
@@ -256,9 +312,10 @@
   }
   function searchTruck({ remember = true, scroll = true, notice = "" } = {}) {
     if (!loaded) return;
+    leaveNearby();
     useCitySuggestion();
     extras.clearShared();
-    savedView = false;
+    viewMode = "search";
     retiredSearchNotice = notice;
     activeFilters = filters();
     currentMatches = index.search(activeFilters);
@@ -272,8 +329,56 @@
     renderMatches();
     if (scroll) scrollToResults();
   }
+  function refreshTimeline({ scroll = false, force = false } = {}) {
+    if (!loaded || viewMode !== "timeline") return;
+    const clock = Journey.taipeiClock(), previousDay = activeFilters.weekday;
+    activeFilters = { ...activeFilters, dayType: "recycle", weekday: clock.day, sortOrder: "asc" };
+    if ($("weekday").value === previousDay) $("weekday").value = clock.day;
+    const next = Journey.todayRows(index.search(activeFilters), {
+      remaining: $("timelineRemaining").value === "remaining",
+    });
+    const clockText = clock.date + "（星期" + clock.day + "）" + clock.time + "・台灣時間";
+    if ($("timelineClock").textContent !== clockText) $("timelineClock").textContent = clockText;
+    $("activeContext").textContent = searchDescription(activeFilters);
+    if (!force && next.length === currentMatches.length && next.every((row, i) => row === currentMatches[i])) return;
+    const previousCount = force ? PAGE_SIZE : visibleCount, active = document.activeElement,
+      focusedId = active?.closest(".card")?.querySelector(".save-button")?.dataset.stopId,
+      controlClass = ["save-button", "copy-button", "share-button", "report-button", "map-link", "place-search-link"].find(name => active?.classList.contains(name));
+    currentMatches = next;
+    updateViewButtons();
+    updateDayNotice();
+    renderMatches();
+    while (visibleCount < previousCount && visibleCount < currentMatches.length) showMore();
+    if (focusedId && controlClass) {
+      const card = [...document.querySelectorAll(".card")].find(card => card.querySelector(".save-button")?.dataset.stopId === focusedId);
+      const target = card?.querySelector("." + controlClass) || $("resultsHeading");
+      target.tabIndex = target.tabIndex < 0 ? -1 : target.tabIndex;
+      target.focus({ preventScroll: true });
+    }
+    if (scroll) scrollToResults();
+  }
+  function showTimeline({ scroll = true, remember = true } = {}) {
+    if (!loaded) return;
+    leaveNearby();
+    useCitySuggestion();
+    extras.clearShared();
+    viewMode = "timeline";
+    retiredSearchNotice = "";
+    $("period").value = "";
+    $("sortOrder").value = "asc";
+    $("weekday").value = updateTodayLabel();
+    activeFilters = filters();
+    updateSuggestions();
+    if (remember) {
+      preferences.recent = T.remember(preferences.recent, activeFilters);
+      persist();
+      renderRecent();
+    }
+    refreshTimeline({ scroll, force: true });
+  }
   function showSaved({ scroll = true } = {}) {
-    savedView = true;
+    leaveNearby();
+    viewMode = "saved";
     retiredSearchNotice = "";
     extras.clearShared();
     updateViewButtons();
@@ -305,7 +410,7 @@
   function emptyState(title, description, action, onClick) {
     const box = element("div", "empty-state");
     const symbol = element("div", "empty-symbol");
-    symbol.append(icon(savedView ? "save" : "search"));
+    symbol.append(icon(viewMode === "saved" ? "save" : "search"));
     box.append(symbol, element("h3", "", title), element("p", "", description));
     if (action) {
       const button = element("button", "", action);
@@ -319,13 +424,15 @@
     visibleCount = 0;
     $("results").replaceChildren();
     $("moreButton").hidden = true;
-    $("activeContext").textContent = savedView
+    $("activeContext").textContent = viewMode === "nearby" ? "全市・" + $("nearbyRadius").selectedOptions[0].textContent : viewMode === "saved"
       ? "所有行政區"
       : searchDescription(activeFilters);
     if (!currentMatches.length) {
       $("resultStatus").textContent =
-        "找到 0 筆" + (savedView ? "收藏站點。" : "資料。");
-      if (savedView)
+        "找到 0 筆" + (viewMode === "saved" ? "收藏站點。" : "資料。");
+      if (viewMode === "nearby")
+        emptyState("此範圍內未找到可靠停靠站", "目前範圍內沒有通過位置品質檢查的停靠站，可擴大搜尋範圍，或改用地點文字搜尋。", "改用地點文字搜尋", () => searchTruck({ remember: false }));
+      else if (viewMode === "saved")
         emptyState(
           preferences.favorites.length
             ? "收藏站點目前無法顯示"
@@ -336,6 +443,11 @@
           "回到搜尋結果",
           () => searchTruck({ remember: false }),
         );
+      else if (viewMode === "timeline" && $("timelineRemaining").value === "remaining")
+        emptyState("沒有符合的表定時間", "目前條件下沒有起始／到點時間尚未過去的已知回收站點。這不表示附近沒有垃圾車；可切換全部時段或改用一般搜尋。", "查看全部時段", () => {
+          $("timelineRemaining").value = "all";
+          refreshTimeline({ force: true });
+        });
       else if (activeFilters.weekday)
         emptyState(
           "沒有符合的資源回收站點",
@@ -380,7 +492,7 @@
     preferences.favoriteDetails = T.cleanFavoriteDetails(preferences.favorites, preferences.favoriteDetails);
     persist();
     updateViewButtons();
-    if (savedView) {
+    if (viewMode === "saved") {
       showSaved({ scroll: false });
       $("viewSavedButton").focus({ preventScroll: true });
     } else
@@ -427,25 +539,27 @@
     refreshSaveButton(save, row);
     save.addEventListener("click", () => toggleFavorite(row));
     top.append(location, save);
+    if (viewMode === "nearby") card.append(element("p", "stop-distance", Journey.formatDistance(distances.get(row))));
     const normalized = D.normalizeTime(row.停留時間);
+    const timeline = viewMode === "timeline", schedule = Journey.schedule(row);
     const time = element(
       "p",
       "stop-time" + (normalized ? "" : " invalid"),
       normalized
         ? normalized.replace("-", "–")
-        : D.clean(row.停留時間) || "時間尚未提供",
+        : timeline ? "表定時間尚未提供" : D.clean(row.停留時間) || "時間尚未提供",
     );
     const caption = normalized
       ? normalized.includes("-")
         ? "表定停留時間"
         : "表定到點時間・未提供離站時間"
-      : "原始時間待確認，未列入時段篩選";
-    card.append(
-      top,
-      element("h3", "", D.clean(row.停留地點)),
-      time,
-      element("p", "time-caption", caption),
-    );
+      : timeline ? "時間無法完整解析，未列入尚未過去篩選" : "原始時間待確認，未列入時段篩選";
+    const heading = element("h3", "", D.clean(row.停留地點)), captionNode = element("p", "time-caption", caption);
+    if (timeline) {
+      card.classList.add("timeline-card");
+      card.append(time, captionNode, heading, top);
+      if (schedule.crossesMidnight) card.append(element("p", "time-caption", "跨午夜時段，來源未提供跨日歸屬；不列入尚未過去篩選。"));
+    } else card.append(top, heading, time, captionNode);
     const days = element("dl", "day-grid");
     const pair = element("div", "day-detail"),
       day = D.clean(row.recycleDay);
@@ -504,7 +618,7 @@
       " 筆，已顯示 " +
       visibleCount.toLocaleString("zh-TW") +
       " 筆。";
-    if (savedView) {
+    if (viewMode === "saved") {
       const available = new Set(currentMatches.map(T.stopId)).size,
         missing = preferences.favorites.length - available;
       if (missing)
@@ -570,6 +684,7 @@
         meta,
         loadedAt: loaded ? new Date() : null,
       });
+      nearby = Journey.nearbyIndex(index.search({ district: T.ALL_DISTRICTS }), extras.getLocationAudit());
       $("dataStatus").textContent =
         "已載入 " +
         (files.length - failedFiles.length) +
@@ -603,7 +718,9 @@
       if (loaded) {
         if (extras.resolveShared()) {
           /* A share failure must not silently show another stop. */
-        } else if (savedView) showSaved({ scroll: false });
+        } else if (viewMode === "nearby" && locationSession.get()) renderNearby({ scroll: false });
+        else if (viewMode === "timeline") refreshTimeline();
+        else if (viewMode === "saved") showSaved({ scroll: false });
         else if (activeFilters) {
           // Re-run the last submitted search, without overwriting any draft edits.
           currentMatches = index.search(activeFilters);
@@ -624,6 +741,10 @@
       }
     } catch {
       if (epoch !== loadEpoch) return;
+      locationSession.cancel();
+      viewMode = "search";
+      updateViewButtons();
+      nearby = Journey.nearbyIndex([], null);
       loaded = false;
       truckData = [];
       index = T.createIndex([]);
@@ -654,6 +775,7 @@
       $("searchButton").disabled = !loaded;
       $("searchButton").textContent = loaded ? "搜尋垃圾車" : "資料尚未載入";
       $("todayButton").disabled = !loaded;
+      $("nearbyButton").disabled = !loaded;
       $("retryButton").disabled = false;
       $("viewSavedButton").disabled = false;
       $("quickSavedButton").disabled = false;
@@ -667,18 +789,19 @@
     return day;
   }
   const extras = createConvenienceUI({
-    getState: () => ({ rows: truckData, loaded, savedView, preferences }),
+    getState: () => ({ rows: truckData, loaded, savedView: viewMode === "saved", preferences }),
     toast,
     setFavorites: (favorites, details = preferences.favoriteDetails) => {
       preferences.favorites = favorites;
       preferences.favoriteDetails = T.cleanFavoriteDetails(favorites, details);
       const stored = persist();
       updateViewButtons();
-      if (savedView) showSaved({ scroll: false });
+      if (viewMode === "saved") showSaved({ scroll: false });
       return stored;
     },
     onShared: (row) => {
-      savedView = false;
+      leaveNearby();
+      viewMode = "search";
       retiredSearchNotice = "";
       $("district").value = row.searchDistrict;
       updateVillages();
@@ -694,7 +817,8 @@
       renderMatches();
     },
     onShareError: (message) => {
-      savedView = false;
+      leaveNearby();
+      viewMode = "search";
       currentMatches = [];
       $("moreButton").hidden = true;
       updateViewButtons();
@@ -705,6 +829,11 @@
     },
   });
   window.addEventListener("offline", () => {
+    leaveNearby();
+    viewMode = "search";
+    nearby = Journey.nearbyIndex([], null);
+    $("nearbyButton").disabled = true;
+    $("nearbyStatus").textContent = "離線中，已清除位置；請恢復網路後重新定位。";
     loadEpoch++;
     loader.reset();
     loaded = false;
@@ -714,6 +843,7 @@
     $("searchButton").disabled = true;
     $("todayButton").disabled = true;
     $("moreButton").hidden = true;
+    updateViewButtons();
     $("dataStatus").textContent = "離線中，目前無法更新清運資訊。";
     $("filterNotice").textContent =
       "目前無法更新清運資訊；不顯示離線舊日期，收藏備份仍可管理。";
@@ -742,13 +872,25 @@
   $("district").addEventListener("change", () => {
     $("village").value = "";
     updateVillages();
-    searchTruck({ remember: false, scroll: false });
+    if (viewMode === "timeline") showTimeline({ remember: false, scroll: false });
+    else searchTruck({ remember: false, scroll: false });
   });
   $("village").addEventListener("change", updateSuggestions);
   $("keyword").addEventListener("input", () => {
     if (useCitySuggestion()) return;
     clearTimeout(suggestionTimer);
     suggestionTimer = setTimeout(updateSuggestions, 100);
+  });
+  $("nearbyButton").addEventListener("click", () => {
+    if (!loaded) return;
+    if (!extras.getLocationAudit()) {
+      $("nearbyStatus").textContent = "路線、版本或圖資未完整載入，無法完成位置品質檢查；附近結果可能不完整，請先重試載入。";
+      return;
+    }
+    locationSession.request();
+  });
+  $("nearbyRadius").addEventListener("change", () => {
+    if (viewMode === "nearby") renderNearby({ scroll: false });
   });
   $("resetButton").addEventListener("click", resetFilters);
   $("moreButton").addEventListener("click", showMore);
@@ -759,14 +901,10 @@
   $("viewSavedButton").addEventListener("click", () => showSaved());
   $("quickSavedButton").addEventListener("click", () => showSaved());
   $("todayButton").addEventListener("click", () => {
-    $("keyword").value = "";
-    $("village").value = "";
-    $("period").value = "";
-    $("sortOrder").value = "asc";
-    $("weekday").value = updateTodayLabel();
-    updateSuggestions();
-    searchTruck();
+    $("timelineRemaining").value = "all";
+    showTimeline();
   });
+  $("timelineRemaining").addEventListener("change", () => refreshTimeline({ force: true }));
   $("clearRecentButton").addEventListener("click", () => {
     preferences.recent = [];
     persist();
@@ -774,8 +912,11 @@
     toast("已清除最近搜尋紀錄。");
   });
   document.addEventListener("visibilitychange", () => {
-    if (!document.hidden) updateTodayLabel();
+    if (!document.hidden) { updateTodayLabel(); refreshTimeline(); }
   });
+  setInterval(() => {
+    if (!document.hidden) { updateTodayLabel(); refreshTimeline(); }
+  }, 30000);
   if (matchMedia("(max-width: 760px)").matches)
     $("advancedFilters").open = false;
   updateTodayLabel();

@@ -24,6 +24,8 @@
     <script defer src="js/location-quality.js"></script>
     <script defer src="js/convenience-core.js"></script>
     <script defer src="js/convenience-ui.js"></script>
+    <script defer src="js/journey-core.js"></script>
+    <script defer src="js/nearby-session.js"></script>
     <script defer src="js/search-app.js"></script>
     <script defer src="js/pwa.js"></script>
   </head>
@@ -269,6 +271,17 @@
               </button>
             </div>
           </form>
+          <section class="nearby-tools" aria-label="附近停靠站搜尋">
+            <button id="nearbyButton" type="button" disabled>找我附近的停靠站</button>
+            <label for="nearbyRadius">搜尋範圍（直線距離）</label>
+            <select id="nearbyRadius"><option value="500">500公尺內</option><option value="1000" selected>1公里內</option><option value="3000">3公里內</option><option value="5000">5公里內</option></select>
+            <p class="hint">按下按鈕才取得位置；只供本頁計算，不儲存、不上傳。非持續定位。</p>
+            <p id="nearbyStatus" class="hint" role="status"></p>
+          </section>
+          <div class="official-entry">
+            <a id="officialLiveLink" href="https://kepbgps.kcg.gov.tw/" target="_blank" rel="noopener noreferrer" aria-label="查看官方垃圾車即時動態，前往高雄市政府外部網站，另開分頁">查看官方垃圾車即時動態 ↗</a>
+            <p class="hint">本站提供表定停靠資訊；即時車輛位置請前往高雄市政府官方系統查詢。外部網站若暫時無法開啟，請稍後再試。</p>
+          </div>
           <section
             id="recentSection"
             class="recent-section"
@@ -319,9 +332,16 @@
               >
             </div>
             <button id="todayButton" type="button" disabled>
-              查看今日站點 <span aria-hidden="true">↗</span>
+              查看今日時間軸 <span aria-hidden="true">↗</span>
             </button>
           </div>
+          <section id="timelineControls" class="timeline-controls" aria-label="今日回收時間軸設定" hidden>
+            <p id="timelineClock" role="status"></p>
+            <label for="timelineRemaining">表定時間篩選</label>
+            <select id="timelineRemaining"><option value="all">全部時段</option><option value="remaining">表定時間尚未過去</option></select>
+            <p>以下為表定停靠時間，非即時到站資訊。實際清運可能因交通、天候或臨時調度有所調整。</p>
+            <details class="timeline-help"><summary>時間篩選與跨日說明</summary><p class="hint">「尚未過去」以台灣目前分鐘比對表定起始／到點時間；不表示車輛即將抵達。無效時間及跨午夜歸屬不明的站點不列入此篩選。</p></details>
+          </section>
           <p id="filterNotice" class="filter-notice" aria-live="polite"></p>
           <section
             id="favoritesManager"
