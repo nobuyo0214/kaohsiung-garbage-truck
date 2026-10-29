@@ -25,6 +25,8 @@ function build({ check = false } = {}) {
     "js/location-quality.js",
     "js/convenience-core.js",
     "js/convenience-ui.js",
+    "js/journey-core.js",
+    "js/nearby-session.js",
     "js/search-app.js",
     "js/pwa.js",
   ];
